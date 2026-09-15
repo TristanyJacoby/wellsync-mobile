@@ -38,6 +38,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   function setTheme(next: Theme) {
+    // A brief global transition class, added only for explicit user-driven
+    // switches (never on initial load/boot, which would otherwise fade in
+    // from nothing) - see the .ws-theme-transitioning rule in variables.css.
+    document.documentElement.classList.add('ws-theme-transitioning');
+    window.setTimeout(() => {
+      document.documentElement.classList.remove('ws-theme-transitioning');
+    }, 400);
+
     // Apply immediately for a snappy UI; persist in the background rather
     // than waiting on the round-trip before the app visibly changes.
     setThemeState(next);

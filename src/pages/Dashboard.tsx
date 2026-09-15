@@ -30,6 +30,11 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null);
   const [showAddTask, setShowAddTask] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  // Holds a task briefly after it's marked done so its row (and the
+  // checkbox burst animation) stay visible for a beat before the normal
+  // "done tasks are filtered out" behavior removes it - without this, the
+  // celebration animation would have zero time to play at all.
+  const [celebrating, setCelebrating] = useState<Task | null>(null);
   const { user } = useAuth();
   const history = useHistory();
 
@@ -65,10 +70,26 @@ export default function Dashboard() {
     return getScheduleRecommendations(base);
   }, [tasks, statusFilter]);
 
+  // getScheduleRecommendations() correctly excludes done tasks (that's core
+  // scheduler logic, not something to special-case) - so a just-completed
+  // task is stitched back in for the celebration window only, never touching
+  // the scheduler itself.
+  const displayTasks = useMemo(() => {
+    if (celebrating && !visibleTasks.some((t) => t.id === celebrating.id)) {
+      return [{ ...celebrating, score: 0, suggestedStartDate: celebrating.dueDate }, ...visibleTasks];
+    }
+    return visibleTasks;
+  }, [visibleTasks, celebrating]);
+
   async function toggleDone(task: Task) {
-    const updated: Task = { ...task, status: task.status === 'done' ? 'todo' : 'done' };
+    const becomingDone = task.status !== 'done';
+    const updated: Task = { ...task, status: becomingDone ? 'done' : 'todo' };
     await updateTask(updated);
     setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
+    if (becomingDone) {
+      setCelebrating(updated);
+      setTimeout(() => setCelebrating((current) => (current?.id === task.id ? null : current)), 650);
+    }
   }
 
   async function cycleStatus(task: Task) {
@@ -150,7 +171,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {visibleTasks.length === 0 && (
+        {displayTasks.length === 0 && (
           <div className="ws-glass-card ws-empty" style={{ marginTop: 16 }}>
             <IonIcon icon={clipboardOutline} className="ws-empty__icon" />
             <p>No tasks yet — tap the + button to add your first one.</p>
@@ -158,11 +179,16 @@ export default function Dashboard() {
         )}
 
         <div className="ws-task-list" style={{ marginTop: 16 }}>
-          {visibleTasks.map((task) => {
+          {displayTasks.map((task, i) => {
             const pPill = priorityPillStyle(task.priority);
             const sPill = statusPillStyle(task.status);
+            const isCelebrating = task.id === celebrating?.id;
             return (
-              <div key={task.id} className="ws-glass-card ws-task-card">
+              <div
+                key={task.id}
+                className="ws-glass-card ws-task-card ws-task-card--rise"
+                style={{ animationDelay: `${Math.min(i, 6) * 60}ms` }}
+              >
                 <div className="ws-task-card__top">
                   <span className="ws-pill ws-pill--dot" style={{ background: pPill.bg, color: pPill.text }}>
                     {pPill.label} Priority
@@ -175,7 +201,7 @@ export default function Dashboard() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <button
                     type="button"
-                    className={`ws-checkbox-btn${task.status === 'done' ? ' is-done' : ''}`}
+                    className={`ws-checkbox-btn${task.status === 'done' ? ' is-done' : ''}${isCelebrating ? ' is-celebrating' : ''}`}
                     aria-pressed={task.status === 'done'}
                     aria-label={task.status === 'done' ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`}
                     onClick={() => toggleDone(task)}

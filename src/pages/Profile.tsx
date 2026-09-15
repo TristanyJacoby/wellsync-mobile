@@ -1,5 +1,5 @@
 import { IonContent, IonPage, IonModal, IonIcon, useIonViewWillEnter } from '@ionic/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { pencilOutline, clipboardOutline, checkmarkDoneOutline, hourglassOutline, statsChartOutline } from 'ionicons/icons';
 import { auth } from '../services/firebase';
@@ -41,9 +41,42 @@ export default function Profile() {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
 
+  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState(0);
+
   useIonViewWillEnter(() => {
     refresh();
   });
+
+  // Tracks which StatCard is most centered within the horizontally-scrolling
+  // carousel, so the CSS can scale/brighten it and dim the rest - gives the
+  // scroll a tactile "snap into focus" feel instead of a flat strip of cards.
+  useEffect(() => {
+    const container = carouselRef.current;
+    if (!container) return;
+    const cards = Array.from(container.children) as HTMLElement[];
+    if (cards.length === 0) return;
+
+    const ratios = new Map<Element, number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => ratios.set(entry.target, entry.intersectionRatio));
+        let bestIndex = 0;
+        let bestRatio = -1;
+        cards.forEach((card, i) => {
+          const ratio = ratios.get(card) ?? 0;
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            bestIndex = i;
+          }
+        });
+        setFocusedIndex(bestIndex);
+      },
+      { root: container, threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+    cards.forEach((card) => observer.observe(card));
+    return () => observer.disconnect();
+  }, []);
 
   function refresh() {
     getProfile().then(setProfile);
@@ -64,39 +97,47 @@ export default function Profile() {
           <p style={{ fontSize: 13, color: 'var(--ws-ink-muted)', marginTop: 2 }}>{user?.email}</p>
         </div>
 
-        <div className="ws-stat-carousel">
-          <StatCard
-            icon={statsChartOutline}
-            label="Completion Rate"
-            value={`${Math.round(completionRate)}%`}
-            percent={completionRate}
-            bg="var(--ws-amber-dim)"
-            text="var(--ws-amber-strong)"
-          />
-          <StatCard
-            icon={clipboardOutline}
-            label={`Total Task${total === 1 ? '' : 's'}`}
-            value={total}
-            percent={100}
-            bg="var(--ws-inreview-bg)"
-            text="var(--ws-inreview-text)"
-          />
-          <StatCard
-            icon={checkmarkDoneOutline}
-            label="Completed"
-            value={completed}
-            percent={completionRate}
-            bg="var(--ws-done-bg)"
-            text="var(--ws-done-text)"
-          />
-          <StatCard
-            icon={hourglassOutline}
-            label="Pending"
-            value={pending}
-            percent={total ? (pending / total) * 100 : 0}
-            bg="var(--ws-medium-bg)"
-            text="var(--ws-medium-text)"
-          />
+        <div className="ws-stat-carousel" ref={carouselRef}>
+          <div className={`ws-stat-carousel__item${focusedIndex === 0 ? ' is-focused' : ''}`}>
+            <StatCard
+              icon={statsChartOutline}
+              label="Completion Rate"
+              value={`${Math.round(completionRate)}%`}
+              percent={completionRate}
+              bg="var(--ws-amber-dim)"
+              text="var(--ws-amber-strong)"
+            />
+          </div>
+          <div className={`ws-stat-carousel__item${focusedIndex === 1 ? ' is-focused' : ''}`}>
+            <StatCard
+              icon={clipboardOutline}
+              label={`Total Task${total === 1 ? '' : 's'}`}
+              value={total}
+              percent={100}
+              bg="var(--ws-inreview-bg)"
+              text="var(--ws-inreview-text)"
+            />
+          </div>
+          <div className={`ws-stat-carousel__item${focusedIndex === 2 ? ' is-focused' : ''}`}>
+            <StatCard
+              icon={checkmarkDoneOutline}
+              label="Completed"
+              value={completed}
+              percent={completionRate}
+              bg="var(--ws-done-bg)"
+              text="var(--ws-done-text)"
+            />
+          </div>
+          <div className={`ws-stat-carousel__item${focusedIndex === 3 ? ' is-focused' : ''}`}>
+            <StatCard
+              icon={hourglassOutline}
+              label="Pending"
+              value={pending}
+              percent={total ? (pending / total) * 100 : 0}
+              bg="var(--ws-medium-bg)"
+              text="var(--ws-medium-text)"
+            />
+          </div>
         </div>
 
         <div className="ws-section-header">

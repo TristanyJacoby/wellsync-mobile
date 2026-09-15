@@ -130,6 +130,29 @@
   box-sizing: border-box;
 }
 
+/* Smooth Light<->Dark theme switch: every color-bearing surface cross-fades
+   instead of hard-cutting. Scoped to a class toggled briefly by
+   ThemeContext's setTheme() around the actual data-theme swap - never
+   applied on initial page load/boot, which would otherwise fade in from
+   nothing rather than snapping to the loaded theme immediately. */
+.ws-theme-transitioning,
+.ws-theme-transitioning * {
+  transition:
+    background-color 350ms ease,
+    background-image 350ms ease,
+    color 350ms ease,
+    border-color 350ms ease,
+    box-shadow 350ms ease,
+    fill 350ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-theme-transitioning,
+  .ws-theme-transitioning * {
+    transition: none !important;
+  }
+}
+
 body,
 ion-app,
 h1, h2, h3, h4, p, span, div, button, input, textarea, ion-label {
@@ -336,6 +359,16 @@ h1, h2, h3, h4, p {
   flex-shrink: 0;
 }
 
+.ws-progress-ring__fill {
+  transition: stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-progress-ring__fill {
+    transition: none;
+  }
+}
+
 .ws-progress-ring__host {
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
 }
@@ -367,17 +400,36 @@ h1, h2, h3, h4, p {
   display: none;
 }
 
-.ws-stat-tile {
+.ws-stat-carousel__item {
   flex: 0 0 78%;
   scroll-snap-align: center;
-  border-radius: var(--ws-radius-lg);
-  padding: 20px;
-  box-shadow: var(--ws-glass-shadow-sm);
 }
 
 @media (min-width: 480px) {
-  .ws-stat-tile {
+  .ws-stat-carousel__item {
     flex-basis: 45%;
+  }
+}
+
+.ws-stat-tile {
+  border-radius: var(--ws-radius-lg);
+  padding: 20px;
+  box-shadow: var(--ws-glass-shadow-sm);
+  height: 100%;
+  transform: scale(0.94);
+  opacity: 0.62;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), opacity 320ms ease;
+}
+
+.ws-stat-carousel__item.is-focused .ws-stat-tile {
+  transform: scale(1);
+  opacity: 1;
+  box-shadow: var(--ws-glass-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-stat-tile {
+    transition: none;
   }
 }
 
@@ -611,6 +663,32 @@ h1, h2, h3, h4, p {
   gap: 12px;
 }
 
+/* Cascading rise-in when the Dashboard task list first mounts (or a new
+   task lands in it) - staggered per-row via the animationDelay inline
+   style. React key-based reconciliation keeps existing rows' DOM nodes on
+   reorders/re-renders, so this only plays for rows that are genuinely new
+   to the DOM, never on every unrelated state change. */
+.ws-task-card--rise {
+  animation: ws-task-rise-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes ws-task-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-task-card--rise {
+    animation: none;
+  }
+}
+
 .ws-task-card__top {
   display: flex;
   align-items: flex-start;
@@ -668,6 +746,7 @@ h1, h2, h3, h4, p {
 }
 
 .ws-checkbox-btn {
+  position: relative;
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -689,6 +768,52 @@ h1, h2, h3, h4, p {
 
 .ws-checkbox-btn ion-icon {
   font-size: 15px;
+}
+
+/* Task-complete celebration: a quick pop on the checkbox itself plus a
+   colored ring bursting outward and fading - tasteful, not confetti. */
+.ws-checkbox-btn.is-celebrating {
+  animation: ws-checkbox-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ws-checkbox-btn.is-celebrating::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--ws-done-text);
+  animation: ws-checkbox-burst 600ms ease-out;
+  pointer-events: none;
+}
+
+@keyframes ws-checkbox-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ws-checkbox-burst {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-checkbox-btn.is-celebrating,
+  .ws-checkbox-btn.is-celebrating::after {
+    animation: none;
+  }
 }
 
 /* ---------- Empty state ---------- */

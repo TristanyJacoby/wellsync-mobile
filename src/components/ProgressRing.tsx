@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 export default function ProgressRing({
   percent,
   size = 110,
@@ -11,9 +13,20 @@ export default function ProgressRing({
   trackColor?: string;
   fillColor?: string;
 }) {
+  // Starts at 0 and sweeps to the real value on mount/update via the
+  // .ws-progress-ring__fill CSS transition - the rAF tick makes sure the
+  // browser actually paints the 0% state first, so there's something for
+  // the transition to animate from instead of snapping straight to target.
+  const [animatedPercent, setAnimatedPercent] = useState(0);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setAnimatedPercent(percent));
+    return () => cancelAnimationFrame(id);
+  }, [percent]);
+
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
-  const clamped = Math.max(0, Math.min(100, percent));
+  const clamped = Math.max(0, Math.min(100, animatedPercent));
   const offset = circumference * (1 - clamped / 100);
   const center = size / 2;
   // The reference hosts the ring's percentage on a bright white disc inside
@@ -35,6 +48,7 @@ export default function ProgressRing({
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         transform={`rotate(-90 ${center} ${center})`}
+        className="ws-progress-ring__fill"
       />
       <circle cx={center} cy={center} r={hostRadius} fill="#fff" className="ws-progress-ring__host" />
       <text
