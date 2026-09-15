@@ -325,6 +325,17 @@ h1, h2, h3, h4, p {
   margin: 18px 0 20px;
 }
 
+/* Sits directly under a page's ws-headline (e.g. "Your Projects",
+   "Frameworks") to explain what the page is for - pulls up into the
+   headline's own bottom margin so it reads as one intro block. */
+.ws-page-description {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ws-ink-muted);
+  margin: -14px 0 20px;
+  max-width: 46ch;
+}
+
 /* ---------- Dark stat card + progress ring ---------- */
 
 .ws-stat-card {
@@ -624,6 +635,114 @@ h1, h2, h3, h4, p {
 .ws-filter-chip.is-active {
   background: var(--ws-dark);
   color: var(--ws-dark-ink);
+}
+
+/* ---------- Eisenhower matrix (Frameworks) ---------- */
+
+.ws-matrix-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 420px) {
+  .ws-matrix-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ws-matrix-quadrant {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 160px;
+}
+
+.ws-matrix-quadrant__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--ws-radius-md);
+  /* Icon + title only (no subtitle) so every quadrant header is the same
+     single-line height regardless of how long its title is. */
+  height: 36px;
+}
+
+.ws-matrix-quadrant__title {
+  font-size: 13px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.ws-matrix-quadrant__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ws-matrix-task {
+  text-align: left;
+  background: var(--ws-glass-bg-strong);
+  border: none;
+  border-radius: var(--ws-radius-sm);
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+/* What the header's removed subtitle used to say now lives here instead -
+   shown only while a quadrant is empty, so the freed-up space explains what
+   belongs there rather than sitting blank. Once it has tasks, the list
+   speaks for itself and this never renders. */
+.ws-matrix-quadrant__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  padding: 8px 6px;
+}
+
+.ws-matrix-quadrant__empty-icon {
+  font-size: 22px;
+  opacity: 0.35;
+  margin-bottom: 4px;
+}
+
+.ws-matrix-quadrant__empty-meaning {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ws-ink-muted);
+  margin: 0;
+}
+
+.ws-matrix-quadrant__empty-guidance {
+  font-size: 11px;
+  color: var(--ws-ink-faint);
+  margin: 0;
+}
+
+/* ---------- Framework info modal ---------- */
+
+.ws-info-list {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ws-info-list li {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ws-ink);
 }
 
 /* ---------- Pills (priority / status) ---------- */
@@ -939,6 +1058,41 @@ ion-select::part(label) {
   color: var(--ws-ink-muted);
   font-size: 13px;
   font-weight: 600;
+}
+
+/* Plain native <input>, not IonInput, for compact inline rows (Projects'
+   "new project name" and inline rename fields) - IonInput's fill="outline"
+   mode hardcodes a 56px min-height internally (overridable padding vars
+   don't touch it), which towered over the small round buttons sitting next
+   to it. AddTask's full-width fields keep using IonInput at its normal
+   size; this is only for tight rows like these. */
+.ws-plain-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: var(--ws-radius-md);
+  border: 1px solid var(--ws-glass-border);
+  background: var(--ws-glass-bg-strong);
+  color: var(--ws-ink);
+  font-family: var(--ion-font-family);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ws-plain-input::placeholder {
+  color: var(--ws-ink-faint);
+  opacity: 1;
+}
+
+.ws-plain-input:focus {
+  outline: 2px solid var(--ws-amber-strong);
+  outline-offset: 1px;
+}
+
+.ws-plain-input--sm {
+  height: 36px;
+  font-size: 13px;
 }
 
 ion-select::part(text) {
@@ -1352,8 +1506,11 @@ ion-tab-button.tab-selected::before {
   content: '';
   position: absolute;
   top: 10px;
-  left: 12%;
-  right: 12%;
+  /* Fixed px inset, not a percentage - a percentage shrinks along with the
+     button itself as more tabs get added (5 tabs now, was 4), which left
+     "Frameworks" - the longest label - touching the highlight's edges. */
+  left: 3px;
+  right: 3px;
   bottom: 10px;
   background: var(--ws-dark);
   border-radius: var(--ws-radius-md);

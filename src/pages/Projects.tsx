@@ -1,4 +1,4 @@
-import { IonContent, IonPage, IonIcon, IonInput, IonModal, useIonViewWillEnter } from '@ionic/react';
+import { IonContent, IonPage, IonIcon, IonModal, useIonViewWillEnter } from '@ionic/react';
 import { useMemo, useState } from 'react';
 import {
   folderOutline,
@@ -96,20 +96,21 @@ export default function Projects() {
         <h1 className="ws-headline" style={{ marginTop: 6 }}>
           Your Projects
         </h1>
+        <p className="ws-page-description">Group related tasks together so you can track and manage them as one unit.</p>
 
-        <div className="ws-glass-card" style={{ padding: 16, display: 'flex', gap: 10, marginBottom: 20 }}>
-          <IonInput
-            fill="outline"
+        <div className="ws-glass-card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <input
+            className="ws-plain-input"
+            type="text"
             value={newName}
             placeholder="New project name"
-            onIonInput={(e) => setNewName(e.detail.value ?? '')}
+            onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
                 handleCreate();
               }
             }}
-            style={{ flex: 1 }}
           />
           <button
             className="ws-icon-btn ws-icon-btn--dark"
@@ -155,16 +156,16 @@ export default function Projects() {
 
                 {isRenaming ? (
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
-                    <IonInput
-                      fill="outline"
+                    <input
+                      className="ws-plain-input ws-plain-input--sm"
+                      type="text"
                       value={renameValue}
-                      autofocus
-                      onIonInput={(e) => setRenameValue(e.detail.value ?? '')}
+                      autoFocus
+                      onChange={(e) => setRenameValue(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') saveRename(project);
                         if (e.key === 'Escape') setRenamingId(null);
                       }}
-                      style={{ flex: 1 }}
                     />
                     <button className="ws-round-btn" aria-label="Save name" onClick={() => saveRename(project)}>
                       <IonIcon icon={checkmarkOutline} style={{ fontSize: 15 }} />

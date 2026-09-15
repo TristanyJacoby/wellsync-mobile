@@ -14,12 +14,13 @@ import {
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Redirect, Route } from 'react-router-dom';
-import { homeOutline, clipboardOutline, calendarOutline, personOutline } from 'ionicons/icons';
+import { homeOutline, clipboardOutline, calendarOutline, personOutline, gridOutline } from 'ionicons/icons';
 import { signOut } from 'firebase/auth';
 
 import Dashboard from './pages/Dashboard';
 import TaskSchedule from './pages/TaskSchedule';
 import Projects from './pages/Projects';
+import Frameworks from './pages/Frameworks';
 import Profile from './pages/Profile';
 import Onboarding from './pages/Onboarding';
 import Auth from './pages/Auth';
@@ -100,6 +101,7 @@ function AppShell() {
             <Route exact path="/home" component={Dashboard} />
             <Route exact path="/projects" component={Projects} />
             <Route exact path="/calendar" component={TaskSchedule} />
+            <Route exact path="/frameworks" component={Frameworks} />
             <Route exact path="/profile" component={Profile} />
             <Route exact path="/">
               <Redirect to="/home" />
@@ -117,6 +119,10 @@ function AppShell() {
             <IonTabButton tab="calendar" href="/calendar">
               <IonIcon icon={calendarOutline} />
               <IonLabel>Calendar</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="frameworks" href="/frameworks">
+              <IonIcon icon={gridOutline} />
+              <IonLabel>Frameworks</IonLabel>
             </IonTabButton>
             <IonTabButton tab="profile" href="/profile">
               <IonIcon icon={personOutline} />
