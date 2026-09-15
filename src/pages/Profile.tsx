@@ -5,10 +5,16 @@ import { pencilOutline, clipboardOutline, checkmarkDoneOutline, hourglassOutline
 import { auth } from '../services/firebase';
 import { getProfile, getTasks } from '../services/storage';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import Avatar from '../components/Avatar';
 import StatCard from '../components/StatCard';
 import Onboarding from './Onboarding';
-import type { OnboardingProfile, Task } from '../types';
+import type { OnboardingProfile, Task, Theme } from '../types';
+
+const THEME_OPTIONS: { id: Theme; label: string; swatch: string }[] = [
+  { id: 'dark', label: 'Dark', swatch: 'linear-gradient(135deg, #16212e 0%, #1f2f45 50%, #28405e 100%)' },
+  { id: 'light', label: 'Light', swatch: 'linear-gradient(135deg, #fce9d8 0%, #f6dce3 45%, #e3d6f2 100%)' },
+];
 
 const WORK_STYLE_LABEL: Record<string, string> = {
   planner: 'Plans ahead of time',
@@ -33,6 +39,7 @@ export default function Profile() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingPreferences, setEditingPreferences] = useState(false);
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   useIonViewWillEnter(() => {
     refresh();
@@ -119,6 +126,25 @@ export default function Profile() {
               {(profile?.reminderStyle && REMINDER_LABEL[profile.reminderStyle]) || 'Not set'}
             </span>
           </div>
+        </div>
+
+        <div className="ws-section-header" style={{ marginTop: 24 }}>
+          <h3>Appearance</h3>
+        </div>
+
+        <div className="ws-theme-row">
+          {THEME_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              className={`ws-theme-option${theme === opt.id ? ' is-selected' : ''}`}
+              onClick={() => setTheme(opt.id)}
+              aria-pressed={theme === opt.id}
+            >
+              <span className="ws-theme-option__swatch" style={{ background: opt.swatch }} />
+              {opt.label}
+            </button>
+          ))}
         </div>
 
         <button className="ws-button-google" style={{ marginTop: 24 }} onClick={() => signOut(auth)}>

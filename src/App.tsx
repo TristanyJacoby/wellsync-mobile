@@ -24,6 +24,7 @@ import Profile from './pages/Profile';
 import Onboarding from './pages/Onboarding';
 import Auth from './pages/Auth';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { auth } from './services/firebase';
 import { getProfile } from './services/storage';
 
@@ -132,7 +133,9 @@ export default function App() {
   return (
     <IonApp>
       <AuthProvider>
-        <AppShell />
+        <ThemeProvider>
+          <AppShell />
+        </ThemeProvider>
       </AuthProvider>
     </IonApp>
   );

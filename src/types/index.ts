@@ -5,6 +5,7 @@ export type WorkStyle = 'planner' | 'deadline-driven' | 'spontaneous';
 export type PriorityLens = 'urgency' | 'importance' | 'effort';
 export type ReminderStyle = 'early' | 'last-minute' | 'self-check';
 export type TaskStatus = 'todo' | 'in-progress' | 'in-review' | 'done';
+export type Theme = 'light' | 'dark';
 
 export interface Task {
   id: string;

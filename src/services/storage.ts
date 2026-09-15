@@ -1,6 +1,6 @@
 import { collection, deleteDoc, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
-import type { Task, OnboardingProfile, Project } from '../types';
+import type { Task, OnboardingProfile, Project, Theme } from '../types';
 
 // Every read/write is scoped to the signed-in user: tasks live at
 // users/{uid}/tasks/{taskId}, and the onboarding profile is a field on the
@@ -44,6 +44,20 @@ export async function getProfile(): Promise<OnboardingProfile | null> {
 export async function saveProfile(profile: OnboardingProfile): Promise<void> {
   const uid = requireUid();
   await setDoc(doc(db, 'users', uid), { profile }, { merge: true });
+}
+
+// Stored as a sibling top-level field on the user doc (not nested inside
+// `profile`) so that editing onboarding preferences - which always writes a
+// full profile object via saveProfile - can never clobber the theme choice.
+export async function getTheme(): Promise<Theme> {
+  const uid = requireUid();
+  const snapshot = await getDoc(doc(db, 'users', uid));
+  return (snapshot.data()?.theme as Theme | undefined) ?? 'dark';
+}
+
+export async function saveTheme(theme: Theme): Promise<void> {
+  const uid = requireUid();
+  await setDoc(doc(db, 'users', uid), { theme }, { merge: true });
 }
 
 export async function getProjects(): Promise<Project[]> {

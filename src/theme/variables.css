@@ -34,6 +34,12 @@
   --ws-ink-muted: #6b6b72;
   --ws-ink-faint: #9c9ca3;
 
+  /* Fixed dark ink for content that always sits on a white surface
+     regardless of theme (e.g. ProgressRing's host disc, hardcoded #fff in
+     both themes) - deliberately NOT redefined in the dark theme block,
+     unlike --ws-ink which flips to a light color there. */
+  --ws-host-ink: #1a1a1e;
+
   /* Priority pills (semantic traffic-light colors, not the accent) */
   --ws-low-bg: #dff5e1;
   --ws-low-text: #2f9e44;
@@ -56,6 +62,68 @@
   --ws-radius-md: 18px;
   --ws-radius-sm: 12px;
   --ws-radius-pill: 999px;
+}
+
+/* ---------- Dark theme (navy & gold) ---------- */
+/* WellSync's main/default theme. Same shapes/spacing as the light theme;
+   every color token is re-derived for a dark navy ground with gold as the
+   accent. The one high-contrast surface (--ws-dark, used for the stat
+   card, primary buttons, selected states) stays genuinely dark in both
+   themes - just a shade darker/navier than this theme's own background -
+   so components like ProgressRing that assume "dark card, light text,
+   gold fill, white host disc" need no changes at all switching themes. */
+:root[data-theme='dark'] {
+  --ion-color-primary: #d9a441;
+  --ion-color-primary-rgb: 217, 164, 65;
+  --ion-color-primary-contrast: #10161f;
+  --ion-color-primary-contrast-rgb: 16, 22, 31;
+  --ion-color-primary-shade: #bf8a26;
+  --ion-color-primary-tint: #e2b665;
+
+  /* Deep navy gradient ground, replacing the soft peach/lavender. */
+  --ws-bg-gradient: linear-gradient(135deg, #16212e 0%, #1f2f45 50%, #28405e 100%);
+
+  /* Glass card surface - translucent slate over the navy gradient. */
+  --ws-glass-bg: rgba(107, 136, 168, 0.22);
+  --ws-glass-bg-strong: rgba(107, 136, 168, 0.32);
+  --ws-glass-border: rgba(255, 255, 255, 0.1);
+  --ws-glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  --ws-glass-shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.25);
+
+  /* Dark stat card + primary CTA surface - darker than the page ground. */
+  --ws-dark: #0d1219;
+  --ws-dark-raised: #161f2b;
+  --ws-dark-ink: #f5f5f7;
+  --ws-dark-ink-muted: rgba(245, 245, 247, 0.62);
+
+  /* Brand accent - gold, standing in for the light theme's amber. */
+  --ws-amber: #e0b04d;
+  --ws-amber-strong: #d9a441;
+  --ws-amber-dim: rgba(217, 164, 65, 0.24);
+
+  /* Ink - body text is now light-on-dark. */
+  --ws-ink: #f1f3f6;
+  --ws-ink-muted: #b7c2d0;
+  --ws-ink-faint: #8593a6;
+
+  /* Priority pills - translucent hue tints read better on dark cards than
+     the light theme's pastel solids, which would look washed-out here. */
+  --ws-low-bg: rgba(111, 207, 126, 0.18);
+  --ws-low-text: #6fcf7e;
+  --ws-medium-bg: rgba(240, 169, 78, 0.2);
+  --ws-medium-text: #f0a94e;
+  --ws-high-bg: rgba(255, 127, 149, 0.18);
+  --ws-high-text: #ff7f95;
+
+  /* Status pills */
+  --ws-todo-bg: rgba(199, 208, 220, 0.14);
+  --ws-todo-text: #c7d0dc;
+  --ws-inprogress-bg: rgba(183, 156, 240, 0.2);
+  --ws-inprogress-text: #b79cf0;
+  --ws-inreview-bg: rgba(127, 195, 236, 0.18);
+  --ws-inreview-text: #7fc3ec;
+  --ws-done-bg: rgba(111, 207, 126, 0.18);
+  --ws-done-text: #6fcf7e;
 }
 
 * {
@@ -275,10 +343,11 @@ h1, h2, h3, h4, p {
 .ws-progress-ring text {
   font-family: var(--ion-font-family);
   font-weight: 700;
-  /* Sits on the white host disc (.ws-progress-ring__host), not the dark
-     card behind it, so this needs the light-background ink, not
-     --ws-dark-ink (which is near-white and meant for the dark card face). */
-  fill: var(--ws-ink);
+  /* Sits on the white host disc (.ws-progress-ring__host), which is
+     hardcoded #fff in both themes - must use the theme-invariant
+     --ws-host-ink, not --ws-ink, which flips to a light color in the dark
+     theme and would go near-invisible on that same white disc. */
+  fill: var(--ws-host-ink);
 }
 
 /* Horizontally snap-scrolling stat cards (Profile) - each tile is its own
@@ -393,6 +462,41 @@ h1, h2, h3, h4, p {
   border: none;
   cursor: pointer;
   padding: 0;
+}
+
+/* ---------- Theme picker (Profile > Appearance) ---------- */
+
+.ws-theme-row {
+  display: flex;
+  gap: 12px;
+}
+
+.ws-theme-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--ws-radius-md);
+  border: 2px solid transparent;
+  background: var(--ws-glass-bg-strong);
+  box-shadow: var(--ws-glass-shadow-sm);
+  color: var(--ws-ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ws-theme-option.is-selected {
+  border-color: var(--ws-amber-strong);
+}
+
+.ws-theme-option__swatch {
+  width: 100%;
+  height: 48px;
+  border-radius: var(--ws-radius-sm);
+  box-shadow: inset 0 0 0 1px var(--ws-glass-border);
 }
 
 /* ---------- Filter / count chips ---------- */
