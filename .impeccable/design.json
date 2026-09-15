@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-15T00:00:00.000Z",
+  "title": "Design System: WellSync",
+  "extensions": {
+    "colorMeta": {
+      "amber": {
+        "role": "primary",
+        "displayName": "WellSync Amber",
+        "canonical": "#ffc94d",
+        "tonalRamp": ["#4d3300", "#805500", "#b37700", "#e69900", "#ffc94d", "#ffd166", "#ffe19c", "#fff3d6"]
+      },
+      "bg-gradient-peach": {
+        "role": "neutral",
+        "displayName": "Peach Ground",
+        "canonical": "#fce9d8",
+        "tonalRamp": ["#4a2c12", "#7d4b1f", "#b06c2d", "#d99a54", "#fce9d8", "#fdefe3", "#fef5ee", "#fffaf7"]
+      },
+      "bg-gradient-pink": {
+        "role": "neutral",
+        "displayName": "Pink Ground",
+        "canonical": "#f6dce3",
+        "tonalRamp": ["#4a1f28", "#7d3444", "#b04a61", "#d97e93", "#f6dce3", "#f9e6ea", "#fbf0f2", "#fdf9fa"]
+      },
+      "bg-gradient-lavender": {
+        "role": "neutral",
+        "displayName": "Lavender Ground",
+        "canonical": "#e3d6f2",
+        "tonalRamp": ["#2c2140", "#443368", "#5f4a8f", "#8a6fc0", "#e3d6f2", "#ebe1f6", "#f2ecfa", "#f9f6fc"]
+      },
+      "stat-dark": {
+        "role": "secondary",
+        "displayName": "Stat Card Near-Black",
+        "canonical": "#1c1c1e",
+        "tonalRamp": ["#000000", "#0d0d0e", "#1c1c1e", "#2a2a2d", "#4a4a4d", "#7a7a7d", "#b3b3b5", "#e6e6e7"]
+      },
+      "glass-white": {
+        "role": "neutral",
+        "displayName": "Glass White",
+        "canonical": "rgba(255, 255, 255, 0.62)",
+        "tonalRamp": ["rgba(255,255,255,0.15)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.45)", "rgba(255,255,255,0.62)", "rgba(255,255,255,0.75)", "rgba(255,255,255,0.82)", "rgba(255,255,255,0.9)", "rgba(255,255,255,1)"]
+      },
+      "priority-low-text": {
+        "role": "tertiary",
+        "displayName": "Priority Low Green",
+        "canonical": "#2f9e44",
+        "tonalRamp": ["#0f3316", "#1c5c26", "#288537", "#2f9e44", "#4bbf60", "#7dd68e", "#b4e9bd", "#e2f7e5"]
+      },
+      "priority-medium-text": {
+        "role": "tertiary",
+        "displayName": "Priority Medium Amber-Orange",
+        "canonical": "#c97a1e",
+        "tonalRamp": ["#3f260a", "#6b400f", "#985a15", "#c97a1e", "#e2953f", "#eeb46f", "#f6d3a5", "#fbecd8"]
+      },
+      "priority-high-text": {
+        "role": "tertiary",
+        "displayName": "Priority High Red",
+        "canonical": "#d6455b",
+        "tonalRamp": ["#420f18", "#6f1a29", "#a1273c", "#d6455b", "#e46e80", "#ee9aa7", "#f6c4cd", "#fbe4e8"]
+      },
+      "status-inprogress-text": {
+        "role": "tertiary",
+        "displayName": "Status In Progress Purple",
+        "canonical": "#6b4fbb",
+        "tonalRamp": ["#211836", "#392a5c", "#523c85", "#6b4fbb", "#8b72cd", "#ac9ada", "#cec1e9", "#ebe5f6"]
+      },
+      "status-inreview-text": {
+        "role": "tertiary",
+        "displayName": "Status In Review Blue",
+        "canonical": "#2c7bb0",
+        "tonalRamp": ["#0c2532", "#164257", "#205f7e", "#2c7bb0", "#5498c4", "#82b6d6", "#b3d5e7", "#e0eef6"]
+      },
+      "status-todo-text": {
+        "role": "tertiary",
+        "displayName": "Status To Do Gray",
+        "canonical": "#5b6472",
+        "tonalRamp": ["#1a1d21", "#2d3238", "#414850", "#5b6472", "#7c8492", "#a2a9b3", "#c8cdd4", "#e9ebee"]
+      }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "One large per-page headline, e.g. 'Let's Make Today Productive'." },
+      "title": { "displayName": "Title", "purpose": "Card titles, section headers, modal titles." },
+      "label": { "displayName": "Label", "purpose": "Field labels, pill text, chip text, meta rows." },
+      "body": { "displayName": "Body", "purpose": "Descriptions, meta text, empty-state copy." }
+    },
+    "shadows": [
+      { "name": "glass-shadow", "value": "0 12px 32px rgba(94, 63, 107, 0.14)", "purpose": "Standard elevation for glass cards and the tab bar." },
+      { "name": "glass-shadow-sm", "value": "0 6px 18px rgba(94, 63, 107, 0.1)", "purpose": "Tighter elevation for icon buttons, chips, inputs, day-strip buttons." },
+      { "name": "dark-surface-shadow", "value": "0 16px 32px rgba(20, 15, 10, 0.28)", "purpose": "Warm-black diffused shadow for the stat card." },
+      { "name": "fab-shadow", "value": "0 10px 26px rgba(20, 15, 10, 0.32)", "purpose": "Warm-black diffused shadow for the floating add-task button." }
+    ],
+    "motion": [],
+    "breakpoints": [
+      { "name": "desktop-cap", "value": "768px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Glass Card",
+      "kind": "card",
+      "refersTo": "glass-card",
+      "description": "Translucent frosted-white card surface used for task cards, empty states, and general content containers over the gradient ground.",
+      "html": "<div class=\"ds-glass-card\"><p class=\"ds-glass-card__title\">Design Landing page</p><p class=\"ds-glass-card__desc\">Design the new landing page for the product launch.</p></div>",
+      "css": ".ds-glass-card { background: rgba(255, 255, 255, 0.62); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(255, 255, 255, 0.75); border-radius: 26px; box-shadow: 0 12px 32px rgba(94, 63, 107, 0.14); padding: 18px; font-family: 'Plus Jakarta Sans', sans-serif; } .ds-glass-card__title { font-size: 17px; font-weight: 700; color: #1a1a1e; margin: 0 0 6px; } .ds-glass-card__desc { font-size: 13px; color: #6b6b72; line-height: 1.4; margin: 0; }"
+    },
+    {
+      "name": "Progress Ring",
+      "kind": "custom",
+      "refersTo": "stat-card",
+      "description": "SVG donut with an amber fill arc and a white host disc behind the percentage numeral, so the number reads as a bright focal point against the dark stat card.",
+      "html": "<div class=\"ds-stat-card\"><svg class=\"ds-progress-ring\" width=\"110\" height=\"110\" viewBox=\"0 0 110 110\"><circle cx=\"55\" cy=\"55\" r=\"49\" fill=\"none\" stroke=\"rgba(255,255,255,0.14)\" stroke-width=\"12\"/><circle cx=\"55\" cy=\"55\" r=\"49\" fill=\"none\" stroke=\"#ffc94d\" stroke-width=\"12\" stroke-linecap=\"round\" stroke-dasharray=\"307.9\" stroke-dashoffset=\"86.2\" transform=\"rotate(-90 55 55)\"/><circle cx=\"55\" cy=\"55\" r=\"37\" fill=\"#fff\"/><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"22\" font-weight=\"700\" fill=\"#1a1a1e\">72%</text></svg><div class=\"ds-stat-card__body\"><p class=\"ds-stat-card__title\">Today's Progress</p></div></div>",
+      "css": ".ds-stat-card { background: #1c1c1e; border-radius: 26px; padding: 22px; display: flex; align-items: center; gap: 20px; box-shadow: 0 16px 32px rgba(20, 15, 10, 0.28); font-family: 'Plus Jakarta Sans', sans-serif; } .ds-stat-card__title { color: #f5f5f7; font-size: 15px; font-weight: 700; margin: 0; } .ds-progress-ring { flex-shrink: 0; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35)); }"
+    },
+    {
+      "name": "Themed Datetime Pill",
+      "kind": "input",
+      "refersTo": "glass-card",
+      "description": "Native date/time input wrapped in an icon-led rounded pill, with the browser's own picker-indicator glyph suppressed to opacity 0 so exactly one icon shows per field.",
+      "html": "<label class=\"ds-datetime-pill\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#6b6b72\" stroke-width=\"2\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M8 3v4M16 3v4M3 10h18\"/></svg><input type=\"date\" value=\"2026-04-14\"/></label>",
+      "css": ".ds-datetime-pill { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.82); border-radius: 18px; box-shadow: 0 6px 18px rgba(94, 63, 107, 0.1); padding: 12px 14px; color: #6b6b72; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; } .ds-datetime-pill:focus-within { outline: 2px solid #ffc52e; outline-offset: 1px; } .ds-datetime-pill input { position: relative; border: none; background: transparent; color: #1a1a1e; font-size: 14px; font-weight: 600; width: 100%; font-family: 'Plus Jakarta Sans', sans-serif; } .ds-datetime-pill input:focus { outline: none; } .ds-datetime-pill input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; opacity: 0; cursor: pointer; }"
+    },
+    {
+      "name": "Timeline Rail Item",
+      "kind": "custom",
+      "refersTo": "glass-card",
+      "description": "Vertical dot-and-line rail connecting stacked time-grouped task cards on the Task Schedule agenda view; the line is hidden after the last item in a group.",
+      "html": "<div class=\"ds-timeline-item\"><div class=\"ds-timeline-item__time\">9:00 AM</div><div class=\"ds-timeline-item__rail\"><span class=\"ds-timeline-item__dot\"></span><span class=\"ds-timeline-item__line\"></span></div><div class=\"ds-glass-card ds-timeline-item__card\">Meeting with Client</div></div>",
+      "css": ".ds-timeline-item { display: flex; gap: 14px; margin-bottom: 14px; font-family: 'Plus Jakarta Sans', sans-serif; } .ds-timeline-item__time { flex-shrink: 0; width: 58px; padding-top: 18px; font-size: 13px; font-weight: 700; color: #1a1a1e; text-align: right; } .ds-timeline-item__rail { flex-shrink: 0; width: 10px; display: flex; flex-direction: column; align-items: center; padding-top: 24px; align-self: stretch; } .ds-timeline-item__dot { width: 8px; height: 8px; border-radius: 50%; background: #9c9ca3; flex-shrink: 0; } .ds-timeline-item__line { flex: 1; width: 1px; background: rgba(0,0,0,0.12); margin-top: 4px; } .ds-timeline-item:last-child .ds-timeline-item__line { display: none; } .ds-timeline-item__card { flex: 1; min-width: 0; background: rgba(255,255,255,0.62); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.75); border-radius: 26px; box-shadow: 0 12px 32px rgba(94,63,107,0.14); padding: 18px; color: #1a1a1e; font-weight: 700; }"
+    },
+    {
+      "name": "Tab Bar",
+      "kind": "nav",
+      "refersTo": "glass-card",
+      "description": "Floating glass-blurred rounded tab bar inset from the screen edges; the active tab shows a solid dark-surface pill behind its icon and label.",
+      "html": "<nav class=\"ds-tab-bar\"><button class=\"ds-tab-button ds-tab-button--active\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 11l9-8 9 8M5 10v10h14V10\"/></svg><span>Home</span></button><button class=\"ds-tab-button\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2\"/></svg><span>Projects</span></button></nav>",
+      "css": ".ds-tab-bar { display: flex; justify-content: space-around; align-items: center; background: rgba(255,255,255,0.82); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-radius: 26px; box-shadow: 0 12px 32px rgba(94,63,107,0.14); height: 72px; margin: 0 12px; font-family: 'Plus Jakarta Sans', sans-serif; } .ds-tab-button { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; font-weight: 600; color: #9c9ca3; padding: 10px 18px; border-radius: 18px; cursor: pointer; } .ds-tab-button--active, .ds-tab-button:focus-visible { background: #1c1c1e; color: #f5f5f7; } .ds-tab-button:hover:not(.ds-tab-button--active) { color: #6b6b72; }"
+    },
+    {
+      "name": "Priority Pill",
+      "kind": "chip",
+      "refersTo": "priority-pill-high",
+      "description": "Traffic-light semantic pill for task priority (Low/Medium/High), color-mapped from priorityPillStyle() in board.ts.",
+      "html": "<span class=\"ds-priority-pill ds-priority-pill--high\">High</span>",
+      "css": ".ds-priority-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; white-space: nowrap; } .ds-priority-pill--low { background: #dff5e1; color: #2f9e44; } .ds-priority-pill--medium { background: #fdecd3; color: #c97a1e; } .ds-priority-pill--high { background: #fbe0e4; color: #d6455b; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Soft Concourse",
+    "overview": "WellSync presents its adaptive task scheduler on a single warm-to-cool gradient ground — peach sliding into pink into lavender — with every surface above it rendered as a translucent, blurred glass card rather than an opaque panel. The system replaces WellSync's earlier dark \"split-flap departures board\" identity in full: this is a light, airy, atmospheric world, not a dense mechanical one. The one deliberate carry-over from the old identity is the amber accent, retained in place of the reference image's green as a considered brand-continuity call, not a build error.\n\nDepth comes from softness, not hard edges: diffused, colored (not neutral-gray) shadows sit under every glass surface, and the near-black \"Today's Progress\" stat card is the system's single planned dark surface — a contrast anchor in an otherwise light, pastel field, not a second competing mode. Corners are generous everywhere; nothing in the shipped screens uses a sharp or small-radius corner.\n\nColor is functional before it is decorative: priority and status pills carry real, distinct semantic meaning (traffic-light urgency; a five-way status lifecycle), and are never used as ambient decoration elsewhere in the UI. The amber accent is reserved for the one thing that represents user progress — the ring fill, selected-state lamps, focus rings — and does not bleed into card chrome or navigation.",
+    "keyCharacteristics": [
+      "Diagonal peach → pink → lavender gradient ground, fixed behind every screen including modals",
+      "Frosted glass cards (`backdrop-filter: blur(18px)`) over the gradient, not opaque panels",
+      "One deliberate dark surface (the stat card) for contrast; everything else is light",
+      "Amber accent reserved for progress/selection, never for card or nav chrome",
+      "Fully rounded, pill-shaped interactive controls; no sharp corners anywhere"
+    ],
+    "rules": [
+      { "name": "The One Dark Surface Rule", "body": "The near-black stat-card tone (`--ws-dark`) is reserved for a small, fixed set of chrome — the progress stat card, the active tab pill, the FAB, and primary buttons. It never becomes a general card background; introducing a second competing dark surface would erase the \"one contrast anchor\" read the reference establishes.", "section": "colors" },
+      { "name": "The Functional Pill Rule", "body": "Priority colors (green/orange/red) and status colors (gray/purple/blue/green) are closed, semantic sets tied to `priorityPillStyle()` and `statusPillStyle()` in `src/utils/board.ts`. They label real task state and must not be reused as decorative accents on unrelated UI, and no third pill palette should be invented for a new surface without extending that same mapping.", "section": "colors" },
+      { "name": "The Tinted-Not-Gray Shadow Rule", "body": "Every shadow in the system carries a color tint matched to what it sits under (purple-warm for glass surfaces, warm-black for dark surfaces) — never a neutral `rgba(0,0,0,...)` — reinforcing the soft, atmospheric read instead of a generic material-elevation look.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the gradient ground (`--ws-bg-gradient`, 135°, peach → pink → lavender) fixed and continuous behind every screen and modal, never swapped for a solid color.",
+      "Do use `backdrop-filter: blur(18px)` plus a warm/purple-tinted soft shadow for any new translucent card, matching `.ws-glass-card`.",
+      "Do treat priority and status pill colors as a closed, semantic set sourced from `priorityPillStyle()`/`statusPillStyle()` — extend that mapping rather than inventing new ad hoc pill colors.",
+      "Do reserve the amber accent for progress, selection state, and focus — not for card backgrounds or general chrome.",
+      "Do keep every interactive control (buttons, chips, pills) fully pill-rounded; use 26/18/12px only for card- and field-scale containers."
+    ],
+    "donts": [
+      "Don't introduce a second dark/near-black surface competing with the stat card, tab bar, and primary-button chrome — the dark surface is a single reserved contrast anchor, not a general option.",
+      "Don't leave a native browser control (date/time picker glyph, select arrow) undrawn or double-drawn; suppress or theme it explicitly the way `.ws-datetime-pill` does, so exactly one icon appears per control.",
+      "Don't use a hard-edged, offset drop-shadow anywhere in this system — all elevation in this world is soft and diffused; a crisp neobrutalist-style shadow does not belong here.",
+      "Don't add kickers, eyebrow labels, or a second display typeface — the shipped hierarchy uses only Plus Jakarta Sans at varying weight/size, with no small-caps or overline convention anywhere in the build."
+    ]
+  }
+}

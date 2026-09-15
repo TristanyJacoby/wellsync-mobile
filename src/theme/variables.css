@@ -1,0 +1,1172 @@
+:root {
+  --ion-color-primary: #ffc94d;
+  --ion-color-primary-rgb: 255, 201, 77;
+  --ion-color-primary-contrast: #1a1a1e;
+  --ion-color-primary-contrast-rgb: 26, 26, 30;
+  --ion-color-primary-shade: #e0ac1f;
+  --ion-color-primary-tint: #ffd166;
+
+  --ion-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Soft peach -> pink -> lavender gradient ground, matching the reference. */
+  --ws-bg-gradient: linear-gradient(135deg, #fce9d8 0%, #f6dce3 45%, #e3d6f2 100%);
+
+  /* Glass card surface - translucent white over the gradient. */
+  --ws-glass-bg: rgba(255, 255, 255, 0.62);
+  --ws-glass-bg-strong: rgba(255, 255, 255, 0.82);
+  --ws-glass-border: rgba(255, 255, 255, 0.75);
+  --ws-glass-shadow: 0 12px 32px rgba(94, 63, 107, 0.14);
+  --ws-glass-shadow-sm: 0 6px 18px rgba(94, 63, 107, 0.1);
+
+  /* Dark stat card + primary CTA surface. */
+  --ws-dark: #1c1c1e;
+  --ws-dark-raised: #2a2a2d;
+  --ws-dark-ink: #f5f5f7;
+  --ws-dark-ink-muted: rgba(245, 245, 247, 0.62);
+
+  /* Brand accent - WellSync's amber, standing in for the reference's green. */
+  --ws-amber: #ffc94d;
+  --ws-amber-strong: #ffc52e;
+  --ws-amber-dim: rgba(255, 201, 77, 0.22);
+
+  /* Ink */
+  --ws-ink: #1a1a1e;
+  --ws-ink-muted: #6b6b72;
+  --ws-ink-faint: #9c9ca3;
+
+  /* Priority pills (semantic traffic-light colors, not the accent) */
+  --ws-low-bg: #dff5e1;
+  --ws-low-text: #2f9e44;
+  --ws-medium-bg: #fdecd3;
+  --ws-medium-text: #c97a1e;
+  --ws-high-bg: #fbe0e4;
+  --ws-high-text: #d6455b;
+
+  /* Status pills */
+  --ws-todo-bg: #eef0f4;
+  --ws-todo-text: #5b6472;
+  --ws-inprogress-bg: #ede3fb;
+  --ws-inprogress-text: #6b4fbb;
+  --ws-inreview-bg: #ddeefb;
+  --ws-inreview-text: #2c7bb0;
+  --ws-done-bg: #dff5e1;
+  --ws-done-text: #2f9e44;
+
+  --ws-radius-lg: 26px;
+  --ws-radius-md: 18px;
+  --ws-radius-sm: 12px;
+  --ws-radius-pill: 999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body,
+ion-app,
+h1, h2, h3, h4, p, span, div, button, input, textarea, ion-label {
+  font-family: var(--ion-font-family);
+}
+
+.ws-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+body {
+  background: var(--ws-bg-gradient);
+  background-attachment: fixed;
+}
+
+ion-content {
+  --background: transparent;
+  --color: var(--ws-ink);
+  --padding-start: 20px;
+  --padding-end: 20px;
+  --padding-top: 18px;
+  --padding-bottom: 110px;
+}
+
+ion-content::part(background) {
+  background: var(--ws-bg-gradient);
+}
+
+h1, h2, h3, h4, p {
+  color: var(--ws-ink);
+  margin: 0;
+}
+
+/* Browser surfaces carry the world too. */
+::selection {
+  background: var(--ws-amber);
+  color: var(--ws-dark);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ws-amber-strong);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------- Glass card primitive ---------- */
+
+.ws-glass-card {
+  background: var(--ws-glass-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--ws-glass-border);
+  border-radius: var(--ws-radius-lg);
+  box-shadow: var(--ws-glass-shadow);
+}
+
+/* ---------- Header row (avatar, greeting, header icon buttons) ---------- */
+
+.ws-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ws-header__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ws-header__greeting {
+  min-width: 0;
+}
+
+.ws-header__greeting p {
+  font-size: 13px;
+  color: var(--ws-ink-muted);
+  margin: 0;
+}
+
+.ws-header__greeting h2 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 1px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.ws-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  background: var(--ws-glass-bg-strong);
+  color: var(--ws-ink);
+  box-shadow: var(--ws-glass-shadow-sm);
+}
+
+.ws-icon-btn:active {
+  transform: translateY(1px);
+}
+
+.ws-icon-btn--dark {
+  background: var(--ws-dark);
+  color: var(--ws-dark-ink);
+}
+
+/* ---------- Avatar ---------- */
+
+.ws-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  overflow: hidden;
+  object-fit: cover;
+}
+
+.ws-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------- Headline ---------- */
+
+.ws-headline {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--ws-ink);
+  margin: 18px 0 20px;
+}
+
+/* ---------- Dark stat card + progress ring ---------- */
+
+.ws-stat-card {
+  background: var(--ws-dark);
+  border-radius: var(--ws-radius-lg);
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 16px 32px rgba(20, 15, 10, 0.28);
+}
+
+.ws-stat-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ws-stat-card__title {
+  color: var(--ws-dark-ink);
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.ws-stat-card__row {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.ws-progress-ring {
+  flex-shrink: 0;
+}
+
+.ws-progress-ring__host {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+}
+
+.ws-progress-ring text {
+  font-family: var(--ion-font-family);
+  font-weight: 700;
+  /* Sits on the white host disc (.ws-progress-ring__host), not the dark
+     card behind it, so this needs the light-background ink, not
+     --ws-dark-ink (which is near-white and meant for the dark card face). */
+  fill: var(--ws-ink);
+}
+
+/* Horizontally snap-scrolling stat cards (Profile) - each tile is its own
+   color-coded "slide", the scroll locks ("magnets") onto whichever tile is
+   nearest center when the finger/wheel lets go. */
+.ws-stat-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 4px 4px 10px;
+  margin: 0 -4px 6px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.ws-stat-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.ws-stat-tile {
+  flex: 0 0 78%;
+  scroll-snap-align: center;
+  border-radius: var(--ws-radius-lg);
+  padding: 20px;
+  box-shadow: var(--ws-glass-shadow-sm);
+}
+
+@media (min-width: 480px) {
+  .ws-stat-tile {
+    flex-basis: 45%;
+  }
+}
+
+.ws-stat-tile__icon {
+  font-size: 20px;
+}
+
+.ws-stat-tile__value {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 10px 0 0;
+  line-height: 1;
+}
+
+.ws-stat-tile__label {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.85;
+  margin: 6px 0 14px;
+}
+
+.ws-stat-tile__meter {
+  height: 6px;
+  border-radius: var(--ws-radius-pill);
+  background: rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.ws-stat-tile__meter-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: var(--ws-radius-pill);
+  transform-origin: left center;
+  transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ws-stat-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ws-stat-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ws-dark-ink-muted);
+  font-size: 12px;
+}
+
+.ws-stat-line strong {
+  color: var(--ws-dark-ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ws-stat-line ion-icon {
+  font-size: 15px;
+  color: var(--ws-dark-ink-muted);
+  flex-shrink: 0;
+}
+
+/* ---------- Section header ---------- */
+
+.ws-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 26px 0 12px;
+}
+
+.ws-section-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ws-section-header__link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ws-ink-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ---------- Filter / count chips ---------- */
+
+.ws-chip-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.ws-chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+.ws-count-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 8px 8px;
+  border-radius: var(--ws-radius-pill);
+  border: none;
+  cursor: pointer;
+  background: var(--ws-glass-bg-strong);
+  box-shadow: var(--ws-glass-shadow-sm);
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ws-ink);
+  white-space: nowrap;
+}
+
+.ws-count-chip__num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--ws-ink);
+}
+
+.ws-count-chip.is-active .ws-count-chip__num {
+  background: var(--ws-amber);
+  color: var(--ws-dark);
+}
+
+.ws-filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--ws-radius-pill);
+  border: none;
+  cursor: pointer;
+  background: var(--ws-glass-bg-strong);
+  box-shadow: var(--ws-glass-shadow-sm);
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ws-ink);
+  white-space: nowrap;
+}
+
+.ws-filter-chip ion-icon {
+  font-size: 15px;
+}
+
+.ws-filter-chip.is-active {
+  background: var(--ws-dark);
+  color: var(--ws-dark-ink);
+}
+
+/* ---------- Pills (priority / status) ---------- */
+
+.ws-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--ws-radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  border: none;
+}
+
+.ws-pill--dot::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---------- Task cards ---------- */
+
+.ws-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ws-task-card {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ws-task-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ws-task-card__title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 2px 0 0;
+}
+
+.ws-task-card__desc {
+  font-size: 13px;
+  color: var(--ws-ink-muted);
+  line-height: 1.4;
+}
+
+.ws-task-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-task-card__time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ws-task-card__time ion-icon {
+  font-size: 14px;
+}
+
+.ws-round-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--ws-ink);
+  flex-shrink: 0;
+}
+
+.ws-round-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.ws-checkbox-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--ws-ink-faint);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: transparent;
+}
+
+.ws-checkbox-btn.is-done {
+  border-color: var(--ws-done-text);
+  background: var(--ws-done-text);
+  color: #fff;
+}
+
+.ws-checkbox-btn ion-icon {
+  font-size: 15px;
+}
+
+/* ---------- Empty state ---------- */
+
+.ws-empty {
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--ws-ink-muted);
+}
+
+.ws-empty__icon {
+  font-size: 30px;
+  margin-bottom: 10px;
+  color: var(--ws-ink-faint);
+}
+
+.ws-empty p {
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ---------- Floating add-task control ---------- */
+
+.ws-fab {
+  position: fixed;
+  bottom: calc(94px + env(safe-area-inset-bottom));
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: var(--ws-dark);
+  color: var(--ws-dark-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 10px 26px rgba(20, 15, 10, 0.32);
+  z-index: 5;
+}
+
+.ws-fab:active {
+  transform: translateY(1px);
+}
+
+/* ---------- Buttons / controls ---------- */
+
+ion-button {
+  --border-radius: var(--ws-radius-pill);
+  --box-shadow: none;
+  --background: var(--ws-dark);
+  --color: var(--ws-dark-ink);
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: none;
+  font-family: var(--ion-font-family);
+}
+
+ion-button[fill='outline'] {
+  --border-color: var(--ws-ink-faint);
+  --color: var(--ws-ink);
+  --background: transparent;
+}
+
+.ws-button-block {
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--ws-radius-pill);
+  border: none;
+  background: var(--ws-dark);
+  color: var(--ws-dark-ink);
+  font-family: var(--ion-font-family);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.ws-button-block:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ws-button-google {
+  width: 100%;
+  padding: 15px;
+  border-radius: var(--ws-radius-pill);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: var(--ws-glass-bg-strong);
+  color: var(--ws-ink);
+  font-family: var(--ion-font-family);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+ion-input,
+ion-textarea,
+ion-select {
+  --background: var(--ws-glass-bg-strong);
+  --color: var(--ws-ink);
+  --placeholder-color: var(--ws-ink-faint);
+  --placeholder-opacity: 1;
+  --border-radius: var(--ws-radius-md);
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+  --highlight-color-focused: var(--ws-amber-strong);
+  border-radius: var(--ws-radius-md);
+  box-shadow: var(--ws-glass-shadow-sm);
+  margin-top: 6px;
+  font-family: var(--ion-font-family);
+}
+
+ion-input::part(label),
+ion-textarea::part(label),
+ion-select::part(label) {
+  color: var(--ws-ink-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+ion-select::part(text) {
+  color: var(--ws-ink);
+}
+ion-select::part(icon) {
+  color: var(--ws-ink-muted);
+}
+
+/* Themed date/time pills (Add Task form) - native <input type="date"/"time">
+   wrapped so they read as on-system controls instead of raw browser widgets. */
+.ws-datetime-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.ws-datetime-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ws-glass-bg-strong);
+  border-radius: var(--ws-radius-md);
+  box-shadow: var(--ws-glass-shadow-sm);
+  padding: 12px 14px;
+  color: var(--ws-ink-muted);
+  font-size: 14px;
+}
+
+.ws-datetime-pill:focus-within {
+  outline: 2px solid var(--ws-amber-strong);
+  outline-offset: 1px;
+}
+
+.ws-datetime-pill ion-icon {
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.ws-datetime-pill input {
+  position: relative;
+  border: none;
+  background: transparent;
+  color: var(--ws-ink);
+  font-family: var(--ion-font-family);
+  font-size: 14px;
+  font-weight: 600;
+  width: 100%;
+  color-scheme: light;
+}
+
+.ws-datetime-pill input:focus {
+  outline: none;
+}
+
+/* The browser's own picker-indicator glyph would compete with our leading
+   ionicon as a second, unthemed icon in the same pill - keep the indicator
+   as the click/tap target (stretched over the whole input) but invisible,
+   so there is exactly one visible icon per field, matching the reference. */
+.ws-datetime-pill input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.ws-field-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ws-ink);
+  margin-top: 18px;
+  margin-bottom: 6px;
+}
+.ws-field-label:first-child {
+  margin-top: 0;
+}
+
+/* Priority selection pills (Add Task form) */
+.ws-priority-row {
+  display: flex;
+  gap: 8px;
+}
+
+.ws-priority-pill {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: var(--ws-radius-pill);
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-family: var(--ion-font-family);
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+  opacity: 0.55;
+}
+
+.ws-priority-pill.is-selected {
+  opacity: 1;
+  border-color: currentColor;
+}
+
+/* Tag chips */
+.ws-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ws-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 8px 8px 14px;
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-inprogress-bg);
+  color: var(--ws-inprogress-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ws-tag-chip button {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ws-tag-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--ws-radius-pill);
+  border: 1.5px dashed var(--ws-ink-faint);
+  background: transparent;
+  color: var(--ws-ink-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ws-tag-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* ---------- Day strip (Calendar) ---------- */
+
+.ws-daystrip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.ws-daystrip::-webkit-scrollbar {
+  display: none;
+}
+
+.ws-day {
+  flex: 0 0 52px;
+  height: 76px;
+  border-radius: var(--ws-radius-md);
+  border: none;
+  background: var(--ws-glass-bg-strong);
+  box-shadow: var(--ws-glass-shadow-sm);
+  color: var(--ws-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  font-family: var(--ion-font-family);
+}
+
+.ws-day.is-selected {
+  background: var(--ws-dark);
+  color: var(--ws-dark-ink);
+  box-shadow: 0 10px 22px rgba(20, 15, 10, 0.28);
+}
+
+.ws-day__dow {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.6;
+}
+
+.ws-day__num {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* Reserve the dot's space on every day (visibility toggles, layout doesn't)
+   so days with and without tasks stay the same height in the strip. */
+.ws-day__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ws-amber-strong);
+  visibility: hidden;
+}
+
+.ws-day__dot.is-visible {
+  visibility: visible;
+}
+
+.ws-day.is-selected .ws-day__dot.is-visible {
+  background: var(--ws-dark-ink);
+}
+
+/* ---------- Time-of-day section ---------- */
+
+.ws-time-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 22px 0 12px;
+}
+
+.ws-time-section__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ws-ink-muted);
+}
+
+.ws-time-section__label ion-icon {
+  font-size: 16px;
+}
+
+.ws-time-section__today {
+  font-size: 13px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-timeline-item {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.ws-timeline-item__time {
+  flex-shrink: 0;
+  width: 58px;
+  padding-top: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ws-ink);
+  text-align: right;
+}
+
+.ws-timeline-item__card {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Dot-and-line connector linking stacked time labels down the agenda - the
+   reference's vertical timeline rail. Hidden after the last item in a
+   section so the line never dangles past the final card. */
+.ws-timeline-item__rail {
+  flex-shrink: 0;
+  width: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 24px;
+  align-self: stretch;
+}
+
+.ws-timeline-item__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ws-ink-faint);
+  flex-shrink: 0;
+}
+
+.ws-timeline-item__line {
+  flex: 1;
+  width: 1px;
+  background: rgba(0, 0, 0, 0.12);
+  margin-top: 4px;
+}
+
+.ws-timeline-item:last-child .ws-timeline-item__line {
+  display: none;
+}
+
+/* ---------- Profile label/value rows ---------- */
+
+.ws-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  gap: 12px;
+}
+.ws-info-row:last-child {
+  border-bottom: none;
+}
+.ws-info-row__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ws-ink-muted);
+  flex-shrink: 0;
+}
+.ws-info-row__value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ws-ink);
+  text-align: right;
+}
+
+/* ---------- Onboarding option rows ---------- */
+
+.ws-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px;
+  border-radius: var(--ws-radius-md);
+  cursor: pointer;
+  color: var(--ws-ink);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  background: var(--ws-glass-bg-strong);
+  box-shadow: var(--ws-glass-shadow-sm);
+  border: 2px solid transparent;
+}
+
+.ws-option.is-selected {
+  border-color: var(--ws-amber-strong);
+  background: var(--ws-amber-dim);
+}
+
+.ws-option__lamp {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--ws-ink-faint);
+  flex-shrink: 0;
+}
+
+.ws-option.is-selected .ws-option__lamp {
+  background: var(--ws-amber-strong);
+  border-color: var(--ws-amber-strong);
+}
+
+.ws-progress-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.ws-progress-track.is-filled {
+  background: var(--ws-amber-strong);
+}
+
+/* ---------- Tab bar ---------- */
+
+ion-tab-bar {
+  --background: transparent;
+  border: none;
+  position: relative;
+  margin: 0 12px calc(10px + env(safe-area-inset-bottom));
+  height: 72px;
+  border-radius: var(--ws-radius-lg);
+  background: var(--ws-glass-bg-strong);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: var(--ws-glass-shadow);
+}
+
+ion-tab-button {
+  --color: var(--ws-ink-faint);
+  --color-selected: var(--ws-ink);
+  font-family: var(--ion-font-family);
+}
+
+ion-tab-button::part(native) {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+ion-tab-button.tab-selected {
+  position: relative;
+}
+
+ion-tab-button.tab-selected::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 12%;
+  right: 12%;
+  bottom: 10px;
+  background: var(--ws-dark);
+  border-radius: var(--ws-radius-md);
+  z-index: -1;
+}
+
+ion-tab-button.tab-selected {
+  --color-selected: var(--ws-dark-ink);
+}
+
+/* Add Task opens as a full-screen modal (the reference's "Add New Task" is a
+   whole page, not a peek-behind iOS card sheet). */
+ion-modal {
+  --width: 100%;
+  --height: 100%;
+  --border-radius: 0;
+}
+
+ion-modal::part(content) {
+  background: var(--ws-bg-gradient);
+}
+
+/* The date-jump picker (Calendar button, Task Schedule) is a small utility
+   picker, not a full screen - override the full-screen default above with a
+   centered card sized to the datetime grid itself. */
+ion-modal.ws-date-modal {
+  --width: fit-content;
+  --height: fit-content;
+  --border-radius: 20px;
+  --box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
+}
+
+ion-modal.ws-date-modal::part(content) {
+  background: var(--ws-glass-bg-strong, #fff);
+}
+
+/* Keep the app phone-width on desktop browsers instead of stretching edge to edge. */
+@media (min-width: 768px) {
+  ion-app {
+    max-width: 430px;
+    height: 100vh;
+    margin: 0 auto;
+    box-shadow: 0 0 60px rgba(94, 63, 107, 0.25);
+  }
+}
