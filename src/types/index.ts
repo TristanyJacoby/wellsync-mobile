@@ -1,5 +1,13 @@
 export type Priority = 'low' | 'medium' | 'high';
-export type Category = 'Work' | 'Personal';
+/** A CategoryDef id. The two defaults use 'Work' and 'Personal' as ids, so
+ * tasks saved before categories were customizable still match. */
+export type Category = string;
+
+export interface CategoryDef {
+  id: string;
+  name: string;
+  color: string;
+}
 export type Quadrant = 'do' | 'schedule' | 'delegate' | 'delete';
 export type WorkStyle = 'planner' | 'deadline-driven' | 'spontaneous';
 export type PriorityLens = 'urgency' | 'importance' | 'effort';

@@ -21,6 +21,10 @@
   /* Dark stat card + primary CTA surface. */
   --ws-dark: #1c1c1e;
   --ws-dark-raised: #2a2a2d;
+
+  /* Solid surface for pop-ups (alerts, pickers) - glass is too see-through
+     over a dimmed backdrop. */
+  --ws-popup-bg: #fffaf6;
   --ws-dark-ink: #f5f5f7;
   --ws-dark-ink-muted: rgba(245, 245, 247, 0.62);
 
@@ -93,6 +97,9 @@
   /* Dark stat card + primary CTA surface - darker than the page ground. */
   --ws-dark: #0d1219;
   --ws-dark-raised: #161f2b;
+
+  /* Solid surface for pop-ups (alerts, pickers). */
+  --ws-popup-bg: #1d2b3d;
   --ws-dark-ink: #f5f5f7;
   --ws-dark-ink-muted: rgba(245, 245, 247, 0.62);
 
@@ -1147,6 +1154,156 @@ ion-range {
   text-align: left;
 }
 
+/* ---------- Add/Edit Task form sections ---------- */
+
+.ws-form-card {
+  padding: 4px 16px 16px;
+  margin-top: 12px;
+}
+
+.ws-form-card .ws-field-label:first-child {
+  margin-top: 14px;
+}
+
+.ws-field-optional {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ws-ink-faint);
+}
+
+.ws-more-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 0 2px;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-more-toggle__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ws-more-toggle__title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ws-more-toggle__summary {
+  font-size: 12px;
+  color: var(--ws-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-more-toggle ion-icon {
+  font-size: 18px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ws-stepper {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ws-stepper__value {
+  min-width: 70px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ws-ink);
+}
+
+.ws-stepper .ws-round-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ---------- Calendar categories ---------- */
+
+.ws-category-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ws-category-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ws-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ws-category-row {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ws-category-row__main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ws-category-row__count {
+  min-width: 18px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ws-ink-muted);
+  text-align: right;
+}
+
+.ws-category-row .ws-round-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.ws-category-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--ws-glass-border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+}
+
+.ws-color-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-left: 36px;
+}
+
 /* Explainer under the status chips (Waiting, Done) */
 .ws-chip-help {
   margin: 10px 2px 0;
@@ -1922,7 +2079,92 @@ ion-modal.ws-date-modal {
 }
 
 ion-modal.ws-date-modal::part(content) {
-  background: var(--ws-glass-bg-strong, #fff);
+  background: var(--ws-popup-bg);
+}
+
+ion-datetime {
+  --background: var(--ws-popup-bg);
+  color: var(--ws-ink);
+  --ion-text-color: var(--ws-ink);
+  --ion-color-step-500: var(--ws-ink-muted);
+}
+
+ion-datetime::part(month-year-button) {
+  color: var(--ws-ink);
+  font-weight: 700;
+}
+
+/* ---------- Pop-ups (IonSelect pickers, confirm alerts) ---------- */
+
+/* ion-alert's own styles are scoped with class selectors; the :is(.md, .ios)
+   mode class lifts these overrides just above them. */
+
+ion-alert:is(.md, .ios) {
+  --background: var(--ws-popup-bg);
+  --max-width: 320px;
+}
+
+ion-alert:is(.md, .ios) .alert-wrapper {
+  border-radius: var(--ws-radius-md);
+  border: 1px solid var(--ws-glass-border);
+  box-shadow: var(--ws-glass-shadow);
+}
+
+ion-alert:is(.md, .ios) .alert-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ws-ink);
+}
+
+ion-alert:is(.md, .ios) .alert-message {
+  color: var(--ws-ink-muted);
+}
+
+ion-alert:is(.md, .ios) .alert-radio-group {
+  border-color: var(--ws-glass-border);
+}
+
+ion-alert:is(.md, .ios) .alert-radio-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ws-ink);
+}
+
+ion-alert:is(.md, .ios) .alert-radio-icon {
+  border-color: var(--ws-ink-faint);
+}
+
+ion-alert:is(.md, .ios) [aria-checked='true'] .alert-radio-icon {
+  border-color: var(--ws-amber);
+}
+
+ion-alert:is(.md, .ios) .alert-radio-inner {
+  background-color: var(--ws-amber);
+}
+
+ion-alert:is(.md, .ios) .alert-button-group {
+  gap: 8px;
+  padding: 8px 12px 12px;
+}
+
+ion-alert:is(.md, .ios) .alert-button {
+  border-radius: var(--ws-radius-pill);
+  min-height: 38px;
+  padding: 0 18px;
+  text-transform: none;
+  font-weight: 700;
+  color: var(--ws-ink-muted);
+}
+
+/* The confirming button is the filled amber pill; Cancel stays quiet. */
+ion-alert:is(.md, .ios) .alert-button:last-child {
+  background: var(--ws-amber);
+  color: #1d1d1f;
+}
+
+ion-alert:is(.md, .ios) .alert-button-role-destructive {
+  background: var(--ws-high-text) !important;
+  color: #fff !important;
 }
 
 /* Keep the app phone-width on desktop browsers instead of stretching edge to edge. */

@@ -1,6 +1,7 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, increment, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, increment, query, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase';
-import type { Task, OnboardingProfile, Project, Theme } from '../types';
+import type { Task, OnboardingProfile, Project, Theme, CategoryDef } from '../types';
+import { DEFAULT_CATEGORIES } from '../utils/categories';
 
 // Every read/write is scoped to the signed-in user: tasks live at
 // users/{uid}/tasks/{taskId}, and the onboarding profile is a field on the
@@ -68,6 +69,29 @@ export async function getTheme(): Promise<Theme> {
 export async function saveTheme(theme: Theme): Promise<void> {
   const uid = requireUid();
   await setDoc(doc(db, 'users', uid), { theme }, { merge: true });
+}
+
+// The user's calendar categories, a top-level field on the user doc like
+// `theme`. Users who never customized them get the Work/Personal defaults.
+export async function getCategories(): Promise<CategoryDef[]> {
+  const uid = requireUid();
+  const snapshot = await getDoc(doc(db, 'users', uid));
+  const categories = snapshot.data()?.categories as CategoryDef[] | undefined;
+  return categories?.length ? categories : DEFAULT_CATEGORIES;
+}
+
+export async function saveCategories(categories: CategoryDef[]): Promise<void> {
+  const uid = requireUid();
+  await setDoc(doc(db, 'users', uid), { categories }, { merge: true });
+}
+
+/** Moves every task in category `fromId` to `toId` (before deleting `fromId`). */
+export async function reassignCategory(fromId: string, toId: string): Promise<void> {
+  const uid = requireUid();
+  const snapshot = await getDocs(query(collection(db, 'users', uid, 'tasks'), where('category', '==', fromId)));
+  const batch = writeBatch(db);
+  snapshot.docs.forEach((d) => batch.update(d.ref, { category: toId }));
+  await batch.commit();
 }
 
 export async function getProjects(): Promise<Project[]> {

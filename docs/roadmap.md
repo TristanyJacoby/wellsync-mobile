@@ -139,7 +139,12 @@ Builds the data model the AI assistant (Phase 8) also uses, so do it before Phas
     - *Acceptance check:* two tasks in progress at once each keep their own %, timer
       count and focus minutes.
 
-### Phase 5 — Custom calendar categories
+### Phase 5 — Custom calendar categories ✅ (built 2026-10-23)
+
+Built: `CategoryDef` + `utils/categories.ts` (defaults keep the ids `'Work'`/`'Personal'`,
+so no task migration was needed); `getCategories`/`saveCategories`/`reassignCategory` in
+`storage.ts`; `components/ManageCategories.tsx` opened from the Calendar's "Edit" chip;
+Calendar chips, card labels and the Add Task picker read the user's list.
 
 15. **User-defined categories** (tester #7). Change `Category` from the fixed
     `'Work' | 'Personal'` union to a category id. Store

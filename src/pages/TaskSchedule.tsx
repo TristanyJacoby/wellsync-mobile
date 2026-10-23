@@ -7,8 +7,7 @@ import {
   arrowBackOutline,
   ellipsisHorizontalOutline,
   calendarOutline,
-  briefcaseOutline,
-  personOutline,
+  optionsOutline,
   sunnyOutline,
   partlySunnyOutline,
   moonOutline,
@@ -16,18 +15,14 @@ import {
   trashOutline,
   pencilOutline,
 } from 'ionicons/icons';
-import { getTasks, addTask, updateTask, deleteTask } from '../services/storage';
+import { getTasks, getCategories, addTask, updateTask, deleteTask } from '../services/storage';
+import { DEFAULT_CATEGORIES, findCategory } from '../utils/categories';
 import { priorityPillStyle, statusPillStyle, cycleStatus, stopping } from '../utils/board';
 import { useUndoToast } from '../hooks/useUndoToast';
 import AddTask from './AddTask';
 import TaskProgressBar from '../components/TaskProgressBar';
-import type { Task, Category } from '../types';
-
-const FILTERS: { id: Category | 'All'; icon?: string }[] = [
-  { id: 'All' },
-  { id: 'Work', icon: briefcaseOutline },
-  { id: 'Personal', icon: personOutline },
-];
+import ManageCategories from '../components/ManageCategories';
+import type { Task, Category, CategoryDef } from '../types';
 
 type Section = { id: string; label: string; icon: string };
 const SECTIONS: Section[] = [
@@ -57,6 +52,8 @@ export default function TaskSchedule() {
   const [showAddTask, setShowAddTask] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [categories, setCategories] = useState<CategoryDef[]>(DEFAULT_CATEGORIES);
+  const [showCategories, setShowCategories] = useState(false);
   const showUndo = useUndoToast();
   const history = useHistory();
   const stripRef = useRef<HTMLDivElement>(null);
@@ -69,7 +66,18 @@ export default function TaskSchedule() {
 
   function refresh() {
     getTasks().then(setTasks);
+    getCategories().then((list) => {
+      setCategories(list);
+      // A filter on a category deleted elsewhere would show nothing forever.
+      setFilter((f) => (f === 'All' || list.some((c) => c.id === f) ? f : 'All'));
+    });
   }
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const t of tasks) counts[t.category] = (counts[t.category] ?? 0) + 1;
+    return counts;
+  }, [tasks]);
 
   const visibleDays = useMemo(() => {
     const start = addDays(new Date(), -DAYS_BEFORE_TODAY);
@@ -186,16 +194,23 @@ export default function TaskSchedule() {
         </div>
 
         <div className="ws-chip-row" style={{ marginBottom: 6 }}>
-          {FILTERS.map((f) => (
+          <button onClick={() => setFilter('All')} className={`ws-filter-chip${filter === 'All' ? ' is-active' : ''}`}>
+            All
+          </button>
+          {categories.map((c) => (
             <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              className={`ws-filter-chip${filter === f.id ? ' is-active' : ''}`}
+              key={c.id}
+              onClick={() => setFilter(c.id)}
+              className={`ws-filter-chip${filter === c.id ? ' is-active' : ''}`}
             >
-              {f.icon && <IonIcon icon={f.icon} />}
-              {f.id}
+              <span className="ws-category-dot" style={{ background: c.color }} aria-hidden="true" />
+              {c.name}
             </button>
           ))}
+          <button className="ws-filter-chip" onClick={() => setShowCategories(true)} aria-label="Manage categories">
+            <IonIcon icon={optionsOutline} />
+            Edit
+          </button>
         </div>
 
         {dayTasks.length === 0 && (
@@ -256,7 +271,14 @@ export default function TaskSchedule() {
                     {task.description && <p className="ws-task-card__desc">{task.description}</p>}
                     {task.status !== 'done' && <TaskProgressBar task={task} />}
                     <div className="ws-task-card__meta">
-                      <span>{task.category}</span>
+                      <span className="ws-category-label">
+                        <span
+                          className="ws-category-dot"
+                          style={{ background: findCategory(categories, task.category).color }}
+                          aria-hidden="true"
+                        />
+                        {findCategory(categories, task.category).name}
+                      </span>
                       <button
                         className="ws-pill"
                         style={{ background: sPill.bg, color: sPill.text, cursor: 'pointer' }}
@@ -302,6 +324,21 @@ export default function TaskSchedule() {
               setShowDatePicker(false);
             }
           }}
+        />
+      </IonModal>
+
+      <IonModal
+        isOpen={showCategories}
+        onDidDismiss={() => {
+          setShowCategories(false);
+          refresh();
+        }}
+      >
+        <ManageCategories
+          categories={categories}
+          taskCounts={categoryCounts}
+          onChange={setCategories}
+          onClose={() => setShowCategories(false)}
         />
       </IonModal>
     </IonPage>
