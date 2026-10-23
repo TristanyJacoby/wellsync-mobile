@@ -10,8 +10,9 @@ import {
   checkmarkOutline,
   closeOutline,
 } from 'ionicons/icons';
-import { getProjects, addProject, updateProject, deleteProject, getTasks, updateTask, deleteTask } from '../services/storage';
-import { statusPillStyle } from '../utils/board';
+import { getProjects, addProject, updateProject, deleteProject, getTasks, addTask, updateTask, deleteTask } from '../services/storage';
+import { statusPillStyle, stopping } from '../utils/board';
+import { useUndoToast } from '../hooks/useUndoToast';
 import AddTask from './AddTask';
 import type { Project, Task } from '../types';
 
@@ -24,6 +25,7 @@ export default function Projects() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const showUndo = useUndoToast();
 
   useIonViewWillEnter(() => {
     refresh();
@@ -88,6 +90,10 @@ export default function Projects() {
   async function removeTaskFromList(task: Task) {
     await deleteTask(task.id);
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
+    showUndo('Task deleted', async () => {
+      await addTask(task);
+      setTasks((prev) => [...prev, task]);
+    });
   }
 
   return (
@@ -209,42 +215,22 @@ export default function Projects() {
                     {projectTasks.map((task) => {
                       const sPill = statusPillStyle(task.status);
                       return (
-                        <div
-                          key={task.id}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 10,
-                            background: 'var(--ws-glass-bg-strong)',
-                            borderRadius: 'var(--ws-radius-sm)',
-                            padding: '10px 12px',
-                          }}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => setEditingTask(task)}
-                            style={{
-                              flex: 1,
-                              background: 'none',
-                              border: 'none',
-                              padding: 0,
-                              textAlign: 'left',
-                              font: 'inherit',
-                              color: 'var(--ws-ink)',
-                              cursor: 'pointer',
-                              fontWeight: 600,
-                              fontSize: 13,
-                            }}
-                          >
-                            {task.title}
-                          </button>
+                        <div key={task.id} className="ws-project-task ws-task-card--tappable" onClick={() => setEditingTask(task)}>
+                          <span className="ws-project-task__title">{task.title}</span>
                           <span className="ws-pill" style={{ background: sPill.bg, color: sPill.text, fontSize: 11 }}>
                             {sPill.label}
                           </span>
                           <button
                             className="ws-round-btn"
+                            aria-label={`Edit ${task.title}`}
+                            onClick={stopping(() => setEditingTask(task))}
+                          >
+                            <IonIcon icon={pencilOutline} style={{ fontSize: 13 }} />
+                          </button>
+                          <button
+                            className="ws-round-btn"
                             aria-label={`Delete ${task.title}`}
-                            onClick={() => removeTaskFromList(task)}
+                            onClick={stopping(() => removeTaskFromList(task))}
                           >
                             <IonIcon icon={trashOutline} style={{ fontSize: 13 }} />
                           </button>

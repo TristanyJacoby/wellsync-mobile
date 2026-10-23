@@ -107,7 +107,7 @@ function AppShell() {
               <Redirect to="/home" />
             </Route>
           </IonRouterOutlet>
-          <IonTabBar slot="bottom">
+          <IonTabBar slot="bottom" id="ws-tab-bar">
             <IonTabButton tab="home" href="/home">
               <IonIcon icon={homeOutline} />
               <IonLabel>Home</IonLabel>

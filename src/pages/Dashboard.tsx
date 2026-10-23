@@ -8,22 +8,31 @@ import {
   chevronUpOutline,
   checkmarkOutline,
   trashOutline,
+  pencilOutline,
   timeOutline,
   clipboardOutline,
 } from 'ionicons/icons';
-import { getTasks, getProfile, updateTask, deleteTask } from '../services/storage';
+import { getTasks, getProfile, addTask, updateTask, deleteTask } from '../services/storage';
 import { getScheduleRecommendations, isInReminderWindow, type ScoredTask } from '../utils/scheduler';
-import { priorityPillStyle, statusPillStyle, nextStatus } from '../utils/board';
+import { priorityPillStyle, statusPillStyle, toggleDone, cycleStatus, stopping } from '../utils/board';
+import { useUndoToast } from '../hooks/useUndoToast';
 import { useAuth } from '../contexts/AuthContext';
 import Avatar from '../components/Avatar';
 import ProgressRing from '../components/ProgressRing';
 import AddTask from './AddTask';
 import type { Task, OnboardingProfile, TaskStatus } from '../types';
 
-const STATUS_FILTERS: { id: TaskStatus; short: string }[] = [
+// Each chip filters Today's Tasks; `help` explains the less obvious ones
+// while that chip is selected.
+const STATUS_FILTERS: { id: TaskStatus; short: string; help?: string }[] = [
   { id: 'todo', short: 'To Do' },
   { id: 'in-progress', short: 'In Progress' },
-  { id: 'in-review', short: 'In Review' },
+  {
+    id: 'in-review',
+    short: 'Waiting',
+    help: "Handed in or handed off, waiting on someone else: a grade, feedback or a reply.",
+  },
+  { id: 'done', short: 'Done', help: 'Finished tasks, newest first. Uncheck one to restore it.' },
 ];
 
 export default function Dashboard() {
@@ -38,6 +47,7 @@ export default function Dashboard() {
   // celebration animation would have zero time to play at all.
   const [celebrating, setCelebrating] = useState<Task | null>(null);
   const [showLater, setShowLater] = useState(false);
+  const showUndo = useUndoToast();
   const { user } = useAuth();
   const history = useHistory();
 
@@ -66,9 +76,17 @@ export default function Dashboard() {
     return counts;
   }, [tasks]);
 
-  // "Today's Tasks" only ever shows active work - there's no Done filter
-  // chip, matching the reference's To Do / In Progress / In Review set.
-  const visibleTasks = useMemo(() => {
+  const isDoneView = statusFilter === 'done';
+
+  // Active work is ranked by the scheduler. The Done chip is the archive:
+  // completed tasks, most recently finished first, outside the scheduler.
+  const visibleTasks = useMemo((): ScoredTask[] => {
+    if (statusFilter === 'done') {
+      return tasks
+        .filter((t) => t.status === 'done')
+        .sort((x, y) => (y.completedAt ?? y.createdAt).localeCompare(x.completedAt ?? x.createdAt))
+        .map((t) => ({ ...t, score: 0, suggestedStartDate: t.dueDate }));
+    }
     const base = statusFilter ? tasks.filter((t) => t.status === statusFilter) : tasks.filter((t) => t.status !== 'done');
     return getScheduleRecommendations(base, profile?.priorityLens);
   }, [tasks, statusFilter, profile?.priorityLens]);
@@ -87,6 +105,7 @@ export default function Dashboard() {
   // The reminder-style answer decides how far ahead a task joins Today's
   // Tasks; the rest wait in a collapsed "Later" group instead of vanishing.
   const [soonTasks, laterTasks] = useMemo(() => {
+    if (isDoneView) return [displayTasks, []];
     const soon: ScoredTask[] = [];
     const later: ScoredTask[] = [];
     for (const t of displayTasks) {
@@ -94,28 +113,38 @@ export default function Dashboard() {
       else later.push(t);
     }
     return [soon, later];
-  }, [displayTasks, celebrating, profile?.reminderStyle]);
+  }, [displayTasks, celebrating, isDoneView, profile?.reminderStyle]);
 
-  async function toggleDone(task: Task) {
-    const becomingDone = task.status !== 'done';
-    const updated: Task = { ...task, status: becomingDone ? 'done' : 'todo' };
+  const activeFilter = STATUS_FILTERS.find((f) => f.id === statusFilter);
+
+  async function saveTask(updated: Task) {
     await updateTask(updated);
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
-    if (becomingDone) {
+    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+  }
+
+  async function handleToggleDone(task: Task) {
+    const updated = toggleDone(task);
+    await saveTask(updated);
+    if (updated.status === 'done') {
       setCelebrating(updated);
       setTimeout(() => setCelebrating((current) => (current?.id === task.id ? null : current)), 650);
+      showUndo('Moved to Done', () => saveTask(task));
     }
   }
 
-  async function cycleStatus(task: Task) {
-    const updated: Task = { ...task, status: nextStatus(task.status) };
-    await updateTask(updated);
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
+  async function handleCycleStatus(task: Task) {
+    const updated = cycleStatus(task);
+    await saveTask(updated);
+    if (updated.status === 'done') showUndo('Moved to Done', () => saveTask(task));
   }
 
   async function removeTask(task: Task) {
     await deleteTask(task.id);
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
+    showUndo('Task deleted', async () => {
+      await addTask(task);
+      setTasks((prev) => [...prev, task]);
+    });
   }
 
   function renderTaskCard(task: ScoredTask, i: number) {
@@ -125,16 +154,26 @@ export default function Dashboard() {
     return (
       <div
         key={task.id}
-        className="ws-glass-card ws-task-card ws-task-card--rise"
+        className="ws-glass-card ws-task-card ws-task-card--rise ws-task-card--tappable"
         style={{ animationDelay: `${Math.min(i, 6) * 60}ms` }}
+        onClick={() => setEditingTask(task)}
       >
         <div className="ws-task-card__top">
           <span className="ws-pill ws-pill--dot" style={{ background: pPill.bg, color: pPill.text }}>
             {pPill.label} Priority
           </span>
-          <button className="ws-round-btn" aria-label={`Delete ${task.title}`} onClick={() => removeTask(task)}>
-            <IonIcon icon={trashOutline} style={{ fontSize: 15 }} />
-          </button>
+          <div className="ws-task-card__actions">
+            <button
+              className="ws-round-btn"
+              aria-label={`Edit ${task.title}`}
+              onClick={stopping(() => setEditingTask(task))}
+            >
+              <IonIcon icon={pencilOutline} style={{ fontSize: 14 }} />
+            </button>
+            <button className="ws-round-btn" aria-label={`Delete ${task.title}`} onClick={stopping(() => removeTask(task))}>
+              <IonIcon icon={trashOutline} style={{ fontSize: 15 }} />
+            </button>
+          </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -143,19 +182,13 @@ export default function Dashboard() {
             className={`ws-checkbox-btn${task.status === 'done' ? ' is-done' : ''}${isCelebrating ? ' is-celebrating' : ''}`}
             aria-pressed={task.status === 'done'}
             aria-label={task.status === 'done' ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`}
-            onClick={() => toggleDone(task)}
+            onClick={stopping(() => handleToggleDone(task))}
           >
             {task.status === 'done' && <IonIcon icon={checkmarkOutline} />}
           </button>
-          <button
-            type="button"
-            className="ws-task-card__title"
-            style={{ margin: 0, background: 'none', border: 'none', padding: 0, textAlign: 'left', font: 'inherit', color: 'inherit', cursor: 'pointer' }}
-            onClick={() => setEditingTask(task)}
-            aria-label={`Edit ${task.title}`}
-          >
+          <p className="ws-task-card__title" style={{ margin: 0 }}>
             {task.title}
-          </button>
+          </p>
         </div>
 
         <div className="ws-task-card__meta">
@@ -166,7 +199,7 @@ export default function Dashboard() {
           <button
             className="ws-pill"
             style={{ background: sPill.bg, color: sPill.text, cursor: 'pointer' }}
-            onClick={() => cycleStatus(task)}
+            onClick={stopping(() => handleCycleStatus(task))}
             aria-label={`Cycle status for ${task.title}, currently ${sPill.label}`}
           >
             {sPill.label}
@@ -244,10 +277,18 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {activeFilter?.help && <p className="ws-chip-help">{activeFilter.help}</p>}
+
         {displayTasks.length === 0 && (
           <div className="ws-glass-card ws-empty" style={{ marginTop: 16 }}>
             <IonIcon icon={clipboardOutline} className="ws-empty__icon" />
-            <p>No tasks yet — tap the + button to add your first one.</p>
+            <p>
+              {activeFilter
+                ? `No ${activeFilter.short} tasks right now.`
+                : completed > 0
+                  ? 'All caught up! Finished tasks are under Done.'
+                  : 'No tasks yet — tap the + button to add your first one.'}
+            </p>
           </div>
         )}
 

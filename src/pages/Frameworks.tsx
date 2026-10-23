@@ -90,11 +90,15 @@ const QUADRANTS: {
   },
 ];
 
+// Tasks shown per quadrant before "+N more", so four quadrants fit a phone.
+const QUADRANT_PREVIEW = 4;
+
 export default function Frameworks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [framework, setFramework] = useState<FrameworkMeta['id']>('eisenhower');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [expandedQuadrants, setExpandedQuadrants] = useState<Set<Quadrant>>(new Set());
 
   useIonViewWillEnter(() => {
     refresh();
@@ -117,6 +121,15 @@ export default function Frameworks() {
     }
     return map;
   }, [tasks]);
+
+  function toggleQuadrant(id: Quadrant) {
+    setExpandedQuadrants((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   const activeFramework = FRAMEWORKS.find((f) => f.id === framework)!;
 
@@ -172,7 +185,7 @@ export default function Frameworks() {
                     </div>
                   ) : (
                     <div className="ws-matrix-quadrant__list">
-                      {quadrantTasks.map((task) => (
+                      {(expandedQuadrants.has(q.id) ? quadrantTasks : quadrantTasks.slice(0, QUADRANT_PREVIEW)).map((task) => (
                         <button
                           key={task.id}
                           type="button"
@@ -182,6 +195,11 @@ export default function Frameworks() {
                           {task.title}
                         </button>
                       ))}
+                      {quadrantTasks.length > QUADRANT_PREVIEW && (
+                        <button type="button" className="ws-matrix-more" onClick={() => toggleQuadrant(q.id)}>
+                          {expandedQuadrants.has(q.id) ? 'Show less' : `+${quadrantTasks.length - QUADRANT_PREVIEW} more`}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

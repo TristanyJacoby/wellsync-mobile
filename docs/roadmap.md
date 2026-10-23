@@ -83,9 +83,12 @@ always joins Today's Tasks once its suggested start date arrives.
    - *Acceptance check:* two profiles with different quiz answers produce a visibly
      different task order for the same task list.
 
-### Phase 3 — Quick tester fixes
+### Phase 3 — Quick tester fixes ✅ (built 2026-10-23)
 
-Small, independent fixes. Each can ship on its own.
+Built: tappable cards + pencil button (Home, Calendar, Projects); Undo toast on done and
+delete (`hooks/useUndoToast.ts`); Done chip on Home as the archive, with restore to the
+previous status (`withStatus` in `utils/board.ts`, `completedAt`/`statusBeforeDone` on
+`Task`); "Waiting" label + chip explainer; 2×2 matrix with "+N more" past 4 tasks.
 
 7. **Clear edit affordance** (tester #2). Today the only way to edit is tapping the title,
    with nothing hinting at it. Make the whole card tappable to open the task, and add a

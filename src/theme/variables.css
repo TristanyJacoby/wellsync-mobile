@@ -672,15 +672,37 @@ h1, h2, h3, h4, p {
 
 /* ---------- Eisenhower matrix (Frameworks) ---------- */
 
+/* Always 2x2, phone widths included - the grid IS the framework, so it
+   never collapses to one column. Narrow screens get tighter quadrants. */
 .ws-matrix-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 }
 
 @media (max-width: 420px) {
   .ws-matrix-grid {
-    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .ws-matrix-quadrant {
+    padding: 8px;
+    gap: 8px;
+    min-height: 150px;
+  }
+  .ws-matrix-quadrant__header {
+    padding: 8px;
+    gap: 6px;
+    height: 32px;
+  }
+  .ws-matrix-quadrant__title {
+    font-size: 12px;
+  }
+  .ws-matrix-task {
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+  .ws-matrix-quadrant__empty-guidance {
+    display: none;
   }
 }
 
@@ -716,6 +738,12 @@ h1, h2, h3, h4, p {
 }
 
 .ws-matrix-task {
+  /* Long titles clamp to two lines so one task can't stretch a quadrant. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
   text-align: left;
   background: var(--ws-glass-bg-strong);
   border: none;
@@ -725,6 +753,18 @@ h1, h2, h3, h4, p {
   font-size: 12px;
   font-weight: 600;
   color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-matrix-more {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ws-ink-muted);
+  text-align: left;
   cursor: pointer;
 }
 
@@ -813,6 +853,58 @@ h1, h2, h3, h4, p {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* Whole card opens the task for editing; inner buttons stop propagation. */
+.ws-task-card--tappable {
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.ws-task-card--tappable:active {
+  transform: scale(0.99);
+}
+
+.ws-task-card__actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* Task row inside an expanded project card */
+.ws-project-task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ws-glass-bg-strong);
+  border-radius: var(--ws-radius-sm);
+  padding: 8px 8px 8px 12px;
+}
+.ws-project-task__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ws-ink);
+}
+.ws-project-task .ws-round-btn {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+/* Explainer under the status chips (Waiting, Done) */
+.ws-chip-help {
+  margin: 10px 2px 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ws-ink-muted);
+}
+
+.ws-undo-toast {
+  --border-radius: var(--ws-radius-md);
+  --button-color: var(--ws-amber);
 }
 
 /* Cascading rise-in when the Dashboard task list first mounts (or a new

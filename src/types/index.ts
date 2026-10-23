@@ -18,6 +18,9 @@ export interface Task {
   effortDays: number; // estimated effort, in days
   quadrant: Quadrant;
   status: TaskStatus;
+  /** Set only while status is 'done', so the Done archive can restore it. */
+  completedAt?: string;
+  statusBeforeDone?: Exclude<TaskStatus, 'done'>;
   tags: string[];
   projectId?: string;
   createdAt: string;

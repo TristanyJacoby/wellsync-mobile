@@ -71,6 +71,9 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
       effortDays,
       quadrant: assignQuadrant(priority, dueDate),
       status: editTask?.status ?? 'todo',
+      // Keep a done task restorable after it's edited from the Done archive.
+      ...(editTask?.completedAt ? { completedAt: editTask.completedAt } : {}),
+      ...(editTask?.statusBeforeDone ? { statusBeforeDone: editTask.statusBeforeDone } : {}),
       tags,
       // Firestore rejects `undefined` field values outright, so an unset
       // project has to be an absent key, not `projectId: undefined`.

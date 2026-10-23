@@ -14,9 +14,11 @@ import {
   moonOutline,
   timeOutline,
   trashOutline,
+  pencilOutline,
 } from 'ionicons/icons';
-import { getTasks, updateTask, deleteTask } from '../services/storage';
-import { priorityPillStyle, statusPillStyle, nextStatus } from '../utils/board';
+import { getTasks, addTask, updateTask, deleteTask } from '../services/storage';
+import { priorityPillStyle, statusPillStyle, cycleStatus, stopping } from '../utils/board';
+import { useUndoToast } from '../hooks/useUndoToast';
 import AddTask from './AddTask';
 import type { Task, Category } from '../types';
 
@@ -54,6 +56,7 @@ export default function TaskSchedule() {
   const [showAddTask, setShowAddTask] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const showUndo = useUndoToast();
   const history = useHistory();
   const stripRef = useRef<HTMLDivElement>(null);
   const selectedDayRef = useRef<HTMLButtonElement>(null);
@@ -111,15 +114,24 @@ export default function TaskSchedule() {
 
   const isToday = format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
 
-  async function cycleStatus(task: Task) {
-    const updated: Task = { ...task, status: nextStatus(task.status) };
+  async function handleCycleStatus(task: Task) {
+    const updated = cycleStatus(task);
+    await saveTask(updated);
+    if (updated.status === 'done') showUndo('Moved to Done', () => saveTask(task));
+  }
+
+  async function saveTask(updated: Task) {
     await updateTask(updated);
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
+    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
   }
 
   async function removeTask(task: Task) {
     await deleteTask(task.id);
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
+    showUndo('Task deleted', async () => {
+      await addTask(task);
+      setTasks((prev) => [...prev, task]);
+    });
   }
 
   return (
@@ -212,31 +224,41 @@ export default function TaskSchedule() {
                     <span className="ws-timeline-item__dot" />
                     <span className="ws-timeline-item__line" />
                   </div>
-                  <div className="ws-glass-card ws-task-card ws-timeline-item__card">
+                  <div
+                    className="ws-glass-card ws-task-card ws-timeline-item__card ws-task-card--tappable"
+                    onClick={() => setEditingTask(task)}
+                  >
                     <div className="ws-task-card__top">
                       <span className="ws-pill ws-pill--dot" style={{ background: pPill.bg, color: pPill.text }}>
                         {pPill.label}
                       </span>
-                      <button className="ws-round-btn" aria-label={`Delete ${task.title}`} onClick={() => removeTask(task)}>
-                        <IonIcon icon={trashOutline} style={{ fontSize: 15 }} />
-                      </button>
+                      <div className="ws-task-card__actions">
+                        <button
+                          className="ws-round-btn"
+                          aria-label={`Edit ${task.title}`}
+                          onClick={stopping(() => setEditingTask(task))}
+                        >
+                          <IonIcon icon={pencilOutline} style={{ fontSize: 14 }} />
+                        </button>
+                        <button
+                          className="ws-round-btn"
+                          aria-label={`Delete ${task.title}`}
+                          onClick={stopping(() => removeTask(task))}
+                        >
+                          <IonIcon icon={trashOutline} style={{ fontSize: 15 }} />
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      className="ws-task-card__title"
-                      style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', font: 'inherit', color: 'inherit', cursor: 'pointer', display: 'block' }}
-                      onClick={() => setEditingTask(task)}
-                      aria-label={`Edit ${task.title}`}
-                    >
+                    <p className="ws-task-card__title" style={{ margin: 0 }}>
                       {task.title}
-                    </button>
+                    </p>
                     {task.description && <p className="ws-task-card__desc">{task.description}</p>}
                     <div className="ws-task-card__meta">
                       <span>{task.category}</span>
                       <button
                         className="ws-pill"
                         style={{ background: sPill.bg, color: sPill.text, cursor: 'pointer' }}
-                        onClick={() => cycleStatus(task)}
+                        onClick={stopping(() => handleCycleStatus(task))}
                         aria-label={`Cycle status for ${task.title}, currently ${sPill.label}`}
                       >
                         {sPill.label}
