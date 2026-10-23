@@ -24,7 +24,10 @@ Built as a TECH101 (technopreneurship) school project on a 2-week MVP timeline, 
 
 ## Capabilities and Constraints
 
-- MVP scope: Onboarding Assessment, Task Input & Prioritization, Smart Task Scheduler, Calendar view, account login + cloud sync.
+- **Three core MVP features** (decided 2026-10-01): Onboarding Assessment, Task Input & Prioritization, Smart Task Scheduler. Together they form the chain that carries the core claim: profile the user, capture and rank tasks, recommend what to do and when.
+- Supporting MVP scope: Calendar view, account login + cloud sync.
+- Deferred past the core three (from the feature table): Adaptive Framework Engine, Pomodoro Timer, Kanban Board View, Progress Dashboard. Eisenhower already ships in the Frameworks tab.
+- **Post-MVP scope (added 2026-10-23 from tester feedback):** working notifications, task phases with per-task and per-project completion %, a Done archive with restore, an In Progress focus panel (Pomodoro, phase checklist, time-spent log), custom calendar categories, five more frameworks (Kanban, Eat the Frog, 1-3-5 Rule, Ivy Lee, MoSCoW), and an AI task assistant behind a demo "WellSync Plus" subscription (mock checkout, no real payments). Phased plan: `docs/roadmap.md` Phases 3–8.
 - **Revised 2026-09-15**: user accounts and cross-device sync are now in scope via Firebase Auth (email/password + Google) and Firestore, replacing the earlier local-only constraint. Still explicitly out of scope: multi-user collaboration (shared projects, assignees, invites), external calendar sync (e.g. Google Calendar), video/meeting integration. WellSync stays single-user — Firebase adds login and sync, not sharing.
 - All persistence goes through Firestore (`src/services/firebase.ts`, `src/services/storage.ts`), scoped per signed-in user (`users/{uid}` for profile, `users/{uid}/tasks/{taskId}` for tasks). Enforced server-side by `firestore.rules`. The earlier `@capacitor/preferences` local-only storage has been fully replaced, not kept as a fallback.
 - Terminology: see `CONTEXT.md` for domain language (Task, OnboardingProfile, priorityLens, reminderStyle, Eisenhower quadrant, Smart Task Scheduler, suggestedStartDate).
@@ -38,4 +41,4 @@ No real user testimonials, case studies, or press exist — this is a pre-launch
 - Personalization drives ranking, not just display — the onboarding profile must visibly change scheduler output, or the core claim is false.
 - Single-user stays single-user — Firebase exists to add login + cross-device sync, not collaboration. Don't quietly grow assignees, sharing, or team features into the data model.
 - Solo-developer, ~2-week MVP: extend what's already built (Onboarding, Dashboard, Calendar, Add Task, Scheduler, Auth) rather than rebuilding it.
-- Demo-ready over feature-complete: the definition of done is the four core features working end-to-end, verified on a real device build, behind a real login.
+- Demo-ready over feature-complete: the definition of done is the three core features (onboarding, task input/prioritization, Smart Task Scheduler) working end-to-end, verified on a real device build, behind a real login.

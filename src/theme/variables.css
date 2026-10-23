@@ -527,6 +527,39 @@ h1, h2, h3, h4, p {
   padding: 0;
 }
 
+/* Collapsed group for tasks outside the reminder window (Home) */
+.ws-later-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 20px 0 12px;
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-later-toggle__count {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--ws-todo-bg);
+  color: var(--ws-todo-text);
+  font-size: 12px;
+  text-align: center;
+}
+
+.ws-later-toggle ion-icon {
+  margin-left: auto;
+  font-size: 16px;
+  color: var(--ws-ink-muted);
+}
+
 /* ---------- Theme picker (Profile > Appearance) ---------- */
 
 .ws-theme-row {

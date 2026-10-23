@@ -4,13 +4,15 @@ import { useHistory } from 'react-router-dom';
 import {
   addOutline,
   notificationsOutline,
+  chevronDownOutline,
+  chevronUpOutline,
   checkmarkOutline,
   trashOutline,
   timeOutline,
   clipboardOutline,
 } from 'ionicons/icons';
 import { getTasks, getProfile, updateTask, deleteTask } from '../services/storage';
-import { getScheduleRecommendations } from '../utils/scheduler';
+import { getScheduleRecommendations, isInReminderWindow, type ScoredTask } from '../utils/scheduler';
 import { priorityPillStyle, statusPillStyle, nextStatus } from '../utils/board';
 import { useAuth } from '../contexts/AuthContext';
 import Avatar from '../components/Avatar';
@@ -35,6 +37,7 @@ export default function Dashboard() {
   // "done tasks are filtered out" behavior removes it - without this, the
   // celebration animation would have zero time to play at all.
   const [celebrating, setCelebrating] = useState<Task | null>(null);
+  const [showLater, setShowLater] = useState(false);
   const { user } = useAuth();
   const history = useHistory();
 
@@ -67,8 +70,8 @@ export default function Dashboard() {
   // chip, matching the reference's To Do / In Progress / In Review set.
   const visibleTasks = useMemo(() => {
     const base = statusFilter ? tasks.filter((t) => t.status === statusFilter) : tasks.filter((t) => t.status !== 'done');
-    return getScheduleRecommendations(base);
-  }, [tasks, statusFilter]);
+    return getScheduleRecommendations(base, profile?.priorityLens);
+  }, [tasks, statusFilter, profile?.priorityLens]);
 
   // getScheduleRecommendations() correctly excludes done tasks (that's core
   // scheduler logic, not something to special-case) - so a just-completed
@@ -80,6 +83,18 @@ export default function Dashboard() {
     }
     return visibleTasks;
   }, [visibleTasks, celebrating]);
+
+  // The reminder-style answer decides how far ahead a task joins Today's
+  // Tasks; the rest wait in a collapsed "Later" group instead of vanishing.
+  const [soonTasks, laterTasks] = useMemo(() => {
+    const soon: ScoredTask[] = [];
+    const later: ScoredTask[] = [];
+    for (const t of displayTasks) {
+      if (t.id === celebrating?.id || isInReminderWindow(t, profile?.reminderStyle)) soon.push(t);
+      else later.push(t);
+    }
+    return [soon, later];
+  }, [displayTasks, celebrating, profile?.reminderStyle]);
 
   async function toggleDone(task: Task) {
     const becomingDone = task.status !== 'done';
@@ -101,6 +116,64 @@ export default function Dashboard() {
   async function removeTask(task: Task) {
     await deleteTask(task.id);
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
+  }
+
+  function renderTaskCard(task: ScoredTask, i: number) {
+    const pPill = priorityPillStyle(task.priority);
+    const sPill = statusPillStyle(task.status);
+    const isCelebrating = task.id === celebrating?.id;
+    return (
+      <div
+        key={task.id}
+        className="ws-glass-card ws-task-card ws-task-card--rise"
+        style={{ animationDelay: `${Math.min(i, 6) * 60}ms` }}
+      >
+        <div className="ws-task-card__top">
+          <span className="ws-pill ws-pill--dot" style={{ background: pPill.bg, color: pPill.text }}>
+            {pPill.label} Priority
+          </span>
+          <button className="ws-round-btn" aria-label={`Delete ${task.title}`} onClick={() => removeTask(task)}>
+            <IonIcon icon={trashOutline} style={{ fontSize: 15 }} />
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            type="button"
+            className={`ws-checkbox-btn${task.status === 'done' ? ' is-done' : ''}${isCelebrating ? ' is-celebrating' : ''}`}
+            aria-pressed={task.status === 'done'}
+            aria-label={task.status === 'done' ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`}
+            onClick={() => toggleDone(task)}
+          >
+            {task.status === 'done' && <IonIcon icon={checkmarkOutline} />}
+          </button>
+          <button
+            type="button"
+            className="ws-task-card__title"
+            style={{ margin: 0, background: 'none', border: 'none', padding: 0, textAlign: 'left', font: 'inherit', color: 'inherit', cursor: 'pointer' }}
+            onClick={() => setEditingTask(task)}
+            aria-label={`Edit ${task.title}`}
+          >
+            {task.title}
+          </button>
+        </div>
+
+        <div className="ws-task-card__meta">
+          <span className="ws-task-card__time">
+            <IonIcon icon={timeOutline} />
+            {task.dueTime || task.dueDate}
+          </span>
+          <button
+            className="ws-pill"
+            style={{ background: sPill.bg, color: sPill.text, cursor: 'pointer' }}
+            onClick={() => cycleStatus(task)}
+            aria-label={`Cycle status for ${task.title}, currently ${sPill.label}`}
+          >
+            {sPill.label}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -179,64 +252,31 @@ export default function Dashboard() {
         )}
 
         <div className="ws-task-list" style={{ marginTop: 16 }}>
-          {displayTasks.map((task, i) => {
-            const pPill = priorityPillStyle(task.priority);
-            const sPill = statusPillStyle(task.status);
-            const isCelebrating = task.id === celebrating?.id;
-            return (
-              <div
-                key={task.id}
-                className="ws-glass-card ws-task-card ws-task-card--rise"
-                style={{ animationDelay: `${Math.min(i, 6) * 60}ms` }}
-              >
-                <div className="ws-task-card__top">
-                  <span className="ws-pill ws-pill--dot" style={{ background: pPill.bg, color: pPill.text }}>
-                    {pPill.label} Priority
-                  </span>
-                  <button className="ws-round-btn" aria-label={`Delete ${task.title}`} onClick={() => removeTask(task)}>
-                    <IonIcon icon={trashOutline} style={{ fontSize: 15 }} />
-                  </button>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <button
-                    type="button"
-                    className={`ws-checkbox-btn${task.status === 'done' ? ' is-done' : ''}${isCelebrating ? ' is-celebrating' : ''}`}
-                    aria-pressed={task.status === 'done'}
-                    aria-label={task.status === 'done' ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`}
-                    onClick={() => toggleDone(task)}
-                  >
-                    {task.status === 'done' && <IonIcon icon={checkmarkOutline} />}
-                  </button>
-                  <button
-                    type="button"
-                    className="ws-task-card__title"
-                    style={{ margin: 0, background: 'none', border: 'none', padding: 0, textAlign: 'left', font: 'inherit', color: 'inherit', cursor: 'pointer' }}
-                    onClick={() => setEditingTask(task)}
-                    aria-label={`Edit ${task.title}`}
-                  >
-                    {task.title}
-                  </button>
-                </div>
-
-                <div className="ws-task-card__meta">
-                  <span className="ws-task-card__time">
-                    <IonIcon icon={timeOutline} />
-                    {task.dueTime || task.dueDate}
-                  </span>
-                  <button
-                    className="ws-pill"
-                    style={{ background: sPill.bg, color: sPill.text, cursor: 'pointer' }}
-                    onClick={() => cycleStatus(task)}
-                    aria-label={`Cycle status for ${task.title}, currently ${sPill.label}`}
-                  >
-                    {sPill.label}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+          {soonTasks.map(renderTaskCard)}
         </div>
+
+        {soonTasks.length === 0 && laterTasks.length > 0 && (
+          <div className="ws-glass-card ws-empty" style={{ marginTop: 16 }}>
+            <IonIcon icon={clipboardOutline} className="ws-empty__icon" />
+            <p>Nothing due soon. Your other tasks are under Later.</p>
+          </div>
+        )}
+
+        {laterTasks.length > 0 && (
+          <>
+            <button
+              type="button"
+              className="ws-later-toggle"
+              aria-expanded={showLater}
+              onClick={() => setShowLater((v) => !v)}
+            >
+              <span>Later</span>
+              <span className="ws-later-toggle__count">{laterTasks.length}</span>
+              <IonIcon icon={showLater ? chevronUpOutline : chevronDownOutline} />
+            </button>
+            {showLater && <div className="ws-task-list">{laterTasks.map(renderTaskCard)}</div>}
+          </>
+        )}
       </IonContent>
 
       <IonModal
