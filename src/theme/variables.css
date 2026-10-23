@@ -894,6 +894,259 @@ h1, h2, h3, h4, p {
   flex-shrink: 0;
 }
 
+/* ---------- Task progress (phases / manual %) ---------- */
+
+.ws-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ws-progress__track {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-glass-bg-strong);
+  overflow: hidden;
+}
+
+.ws-progress__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ws-amber);
+  transition: width 0.3s ease;
+}
+
+.ws-progress__label {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ws-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-project-task__percent {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ws-ink-muted);
+}
+
+/* ---------- Phase editor (Add/Edit Task) + checklist (focus panel) ---------- */
+
+.ws-field-hint {
+  margin: -2px 0 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ws-ink-muted);
+}
+
+.ws-phase-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.ws-phase-row,
+.ws-phase-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ws-phase-row .ws-round-btn {
+  width: 30px;
+  height: 30px;
+}
+
+.ws-phase-row .ws-round-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.ws-checkbox-btn--sm {
+  width: 22px;
+  height: 22px;
+}
+
+.ws-checkbox-btn--sm ion-icon {
+  font-size: 13px;
+}
+
+.ws-phase-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--ws-radius-sm);
+  background: var(--ws-glass-bg-strong);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ws-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ws-phase-check.is-done {
+  color: var(--ws-ink-muted);
+  text-decoration: line-through;
+}
+
+ion-range {
+  --bar-background: var(--ws-glass-bg-strong);
+  --bar-background-active: var(--ws-amber);
+  --knob-background: var(--ws-amber);
+  --bar-height: 6px;
+  --bar-border-radius: 999px;
+  padding: 0 4px;
+}
+
+/* ---------- In Progress focus panel (Home) ---------- */
+
+.ws-focus {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.ws-focus-timer {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ws-focus-timer__mode {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ws-amber-strong);
+}
+
+.ws-focus-timer.is-break .ws-focus-timer__mode {
+  color: var(--ws-done-text);
+}
+
+.ws-focus-timer.is-break .ws-progress__fill {
+  background: var(--ws-done-text);
+}
+
+.ws-focus-timer__task {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ws-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-focus-timer__clock {
+  margin: 2px 0;
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--ws-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-focus-timer__hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ws-ink-muted);
+}
+
+.ws-focus-timer__controls,
+.ws-focus-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ws-focus-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-glass-bg-strong);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-focus-btn--primary {
+  background: var(--ws-amber);
+  color: #1d1d1f;
+}
+
+.ws-focus-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.ws-focus-preset {
+  padding: 6px 12px;
+  border: 1px solid var(--ws-glass-border);
+  border-radius: var(--ws-radius-pill);
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ws-ink-muted);
+  cursor: pointer;
+}
+
+.ws-focus-preset.is-selected {
+  border-color: var(--ws-amber);
+  color: var(--ws-ink);
+}
+
+.ws-focus-task.is-active {
+  box-shadow: 0 0 0 2px var(--ws-amber);
+}
+
+/* Shown on Home while a session runs and the focus view isn't open */
+.ws-focus-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-amber);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1d1d1f;
+  cursor: pointer;
+}
+
+.ws-focus-banner__task {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
 /* Explainer under the status chips (Waiting, Done) */
 .ws-chip-help {
   margin: 10px 2px 0;

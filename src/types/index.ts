@@ -24,6 +24,19 @@ export interface Task {
   tags: string[];
   projectId?: string;
   createdAt: string;
+  /** Ordered steps (e.g. Research -> Draft -> Edit); drive the task's %. */
+  phases?: TaskPhase[];
+  /** 0-100, used only when the task has no phases. */
+  manualProgress?: number;
+  /** Totals from completed Pomodoro focus sessions. */
+  focusMinutes?: number;
+  pomodoros?: number;
+}
+
+export interface TaskPhase {
+  id: string;
+  title: string;
+  done: boolean;
 }
 
 export interface Project {

@@ -109,7 +109,14 @@ previous status (`withStatus` in `utils/board.ts`, `completedAt`/`statusBeforeDo
     compact the quadrant cards (smaller headers, truncated task titles, "+N more") so
     four quadrants fit a 375 px screen.
 
-### Phase 4 — Task phases, progress & focus panel
+### Phase 4 — Task phases, progress & focus panel ✅ (built 2026-10-23)
+
+Built: `phases`/`manualProgress`/`focusMinutes`/`pomodoros` on `Task`; `utils/progress.ts`;
+phase editor + slider in `AddTask.tsx`; `TaskProgressBar` on Home/Calendar cards; project
+% in `Projects.tsx`; app-wide timer in `contexts/PomodoroContext.tsx` (presets 25/5,
+50/10, 15/3; sessions saved with Firestore `increment()` via `recordFocusSession`);
+`components/FocusPanel.tsx` replaces the list when the In Progress chip is selected; a
+timer banner shows on Home's other views while a session runs.
 
 Builds the data model the AI assistant (Phase 8) also uses, so do it before Phase 8.
 

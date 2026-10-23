@@ -14,6 +14,7 @@ import { getProjects, addProject, updateProject, deleteProject, getTasks, addTas
 import { statusPillStyle, stopping } from '../utils/board';
 import { useUndoToast } from '../hooks/useUndoToast';
 import AddTask from './AddTask';
+import { projectProgress, taskProgress } from '../utils/progress';
 import type { Project, Task } from '../types';
 
 export default function Projects() {
@@ -140,6 +141,7 @@ export default function Projects() {
             const projectTasks = tasksByProject.get(project.id) ?? [];
             const isExpanded = expandedId === project.id;
             const isRenaming = renamingId === project.id;
+            const percent = projectProgress(projectTasks);
 
             return (
               <div key={project.id} className="ws-glass-card ws-task-card">
@@ -205,6 +207,22 @@ export default function Projects() {
                   </button>
                 )}
 
+                {projectTasks.length > 0 && (
+                  <div className="ws-progress">
+                    <div
+                      className="ws-progress__track"
+                      role="progressbar"
+                      aria-valuenow={percent}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`${project.name} progress`}
+                    >
+                      <div className="ws-progress__fill" style={{ width: `${percent}%` }} />
+                    </div>
+                    <span className="ws-progress__label">{percent}% complete</span>
+                  </div>
+                )}
+
                 {isExpanded && (
                   <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {projectTasks.length === 0 && (
@@ -217,6 +235,7 @@ export default function Projects() {
                       return (
                         <div key={task.id} className="ws-project-task ws-task-card--tappable" onClick={() => setEditingTask(task)}>
                           <span className="ws-project-task__title">{task.title}</span>
+                          <span className="ws-project-task__percent ws-num">{taskProgress(task)}%</span>
                           <span className="ws-pill" style={{ background: sPill.bg, color: sPill.text, fontSize: 11 }}>
                             {sPill.label}
                           </span>

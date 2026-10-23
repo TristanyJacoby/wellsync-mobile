@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, increment, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import type { Task, OnboardingProfile, Project, Theme } from '../types';
 
@@ -27,6 +27,16 @@ export async function addTask(task: Task): Promise<void> {
 export async function updateTask(updated: Task): Promise<void> {
   const uid = requireUid();
   await setDoc(doc(db, 'users', uid, 'tasks', updated.id), updated);
+}
+
+/** Adds one finished Pomodoro to a task. Uses increment() so a session
+ * finishing while the task is being edited elsewhere can't be lost. */
+export async function recordFocusSession(taskId: string, minutes: number): Promise<void> {
+  const uid = requireUid();
+  await updateDoc(doc(db, 'users', uid, 'tasks', taskId), {
+    focusMinutes: increment(minutes),
+    pomodoros: increment(1),
+  });
 }
 
 export async function deleteTask(id: string): Promise<void> {

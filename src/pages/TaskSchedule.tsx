@@ -20,6 +20,7 @@ import { getTasks, addTask, updateTask, deleteTask } from '../services/storage';
 import { priorityPillStyle, statusPillStyle, cycleStatus, stopping } from '../utils/board';
 import { useUndoToast } from '../hooks/useUndoToast';
 import AddTask from './AddTask';
+import TaskProgressBar from '../components/TaskProgressBar';
 import type { Task, Category } from '../types';
 
 const FILTERS: { id: Category | 'All'; icon?: string }[] = [
@@ -253,6 +254,7 @@ export default function TaskSchedule() {
                       {task.title}
                     </p>
                     {task.description && <p className="ws-task-card__desc">{task.description}</p>}
+                    {task.status !== 'done' && <TaskProgressBar task={task} />}
                     <div className="ws-task-card__meta">
                       <span>{task.category}</span>
                       <button

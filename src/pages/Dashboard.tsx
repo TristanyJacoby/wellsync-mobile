@@ -1,5 +1,5 @@
 import { IonContent, IonPage, IonIcon, IonModal, useIonViewWillEnter } from '@ionic/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import {
   addOutline,
@@ -11,6 +11,7 @@ import {
   pencilOutline,
   timeOutline,
   clipboardOutline,
+  timerOutline,
 } from 'ionicons/icons';
 import { getTasks, getProfile, addTask, updateTask, deleteTask } from '../services/storage';
 import { getScheduleRecommendations, isInReminderWindow, type ScoredTask } from '../utils/scheduler';
@@ -19,6 +20,9 @@ import { useUndoToast } from '../hooks/useUndoToast';
 import { useAuth } from '../contexts/AuthContext';
 import Avatar from '../components/Avatar';
 import ProgressRing from '../components/ProgressRing';
+import TaskProgressBar from '../components/TaskProgressBar';
+import FocusPanel from '../components/FocusPanel';
+import { usePomodoro, formatClock } from '../contexts/PomodoroContext';
 import AddTask from './AddTask';
 import type { Task, OnboardingProfile, TaskStatus } from '../types';
 
@@ -26,7 +30,7 @@ import type { Task, OnboardingProfile, TaskStatus } from '../types';
 // while that chip is selected.
 const STATUS_FILTERS: { id: TaskStatus; short: string; help?: string }[] = [
   { id: 'todo', short: 'To Do' },
-  { id: 'in-progress', short: 'In Progress' },
+  { id: 'in-progress', short: 'In Progress', help: 'Your focus view: run a Pomodoro, tick off phases, see time spent.' },
   {
     id: 'in-review',
     short: 'Waiting',
@@ -48,6 +52,13 @@ export default function Dashboard() {
   const [celebrating, setCelebrating] = useState<Task | null>(null);
   const [showLater, setShowLater] = useState(false);
   const showUndo = useUndoToast();
+  const pomodoro = usePomodoro();
+
+  // A finished Pomodoro writes focus totals straight to Firestore; refetch
+  // so the time-spent line updates without leaving the page.
+  useEffect(() => {
+    if (pomodoro.sessionsSaved > 0) getTasks().then(setTasks);
+  }, [pomodoro.sessionsSaved]);
   const { user } = useAuth();
   const history = useHistory();
 
@@ -77,6 +88,7 @@ export default function Dashboard() {
   }, [tasks]);
 
   const isDoneView = statusFilter === 'done';
+  const isFocusView = statusFilter === 'in-progress';
 
   // Active work is ranked by the scheduler. The Done chip is the archive:
   // completed tasks, most recently finished first, outside the scheduler.
@@ -191,6 +203,8 @@ export default function Dashboard() {
           </p>
         </div>
 
+        {task.status !== 'done' && <TaskProgressBar task={task} />}
+
         <div className="ws-task-card__meta">
           <span className="ws-task-card__time">
             <IonIcon icon={timeOutline} />
@@ -279,43 +293,64 @@ export default function Dashboard() {
 
         {activeFilter?.help && <p className="ws-chip-help">{activeFilter.help}</p>}
 
-        {displayTasks.length === 0 && (
-          <div className="ws-glass-card ws-empty" style={{ marginTop: 16 }}>
-            <IonIcon icon={clipboardOutline} className="ws-empty__icon" />
-            <p>
-              {activeFilter
-                ? `No ${activeFilter.short} tasks right now.`
-                : completed > 0
-                  ? 'All caught up! Finished tasks are under Done.'
-                  : 'No tasks yet — tap the + button to add your first one.'}
-            </p>
-          </div>
+        {pomodoro.timer && !isFocusView && (
+          <button type="button" className="ws-focus-banner" onClick={() => setStatusFilter('in-progress')}>
+            <IonIcon icon={timerOutline} />
+            <span className="ws-focus-banner__task">
+              {pomodoro.timer.mode === 'break' ? 'Break' : pomodoro.timer.taskTitle}
+            </span>
+            <span className="ws-num">{formatClock(pomodoro.remainingMs)}</span>
+          </button>
         )}
 
-        <div className="ws-task-list" style={{ marginTop: 16 }}>
-          {soonTasks.map(renderTaskCard)}
-        </div>
-
-        {soonTasks.length === 0 && laterTasks.length > 0 && (
-          <div className="ws-glass-card ws-empty" style={{ marginTop: 16 }}>
-            <IonIcon icon={clipboardOutline} className="ws-empty__icon" />
-            <p>Nothing due soon. Your other tasks are under Later.</p>
-          </div>
-        )}
-
-        {laterTasks.length > 0 && (
+        {isFocusView ? (
+          <FocusPanel
+            tasks={displayTasks}
+            onSave={saveTask}
+            onEdit={setEditingTask}
+            onMarkDone={handleToggleDone}
+          />
+        ) : (
           <>
-            <button
-              type="button"
-              className="ws-later-toggle"
-              aria-expanded={showLater}
-              onClick={() => setShowLater((v) => !v)}
-            >
-              <span>Later</span>
-              <span className="ws-later-toggle__count">{laterTasks.length}</span>
-              <IonIcon icon={showLater ? chevronUpOutline : chevronDownOutline} />
-            </button>
-            {showLater && <div className="ws-task-list">{laterTasks.map(renderTaskCard)}</div>}
+            {displayTasks.length === 0 && (
+              <div className="ws-glass-card ws-empty" style={{ marginTop: 16 }}>
+                <IonIcon icon={clipboardOutline} className="ws-empty__icon" />
+                <p>
+                  {activeFilter
+                    ? `No ${activeFilter.short} tasks right now.`
+                    : completed > 0
+                      ? 'All caught up! Finished tasks are under Done.'
+                      : 'No tasks yet — tap the + button to add your first one.'}
+                </p>
+              </div>
+            )}
+
+            <div className="ws-task-list" style={{ marginTop: 16 }}>
+              {soonTasks.map(renderTaskCard)}
+            </div>
+
+            {soonTasks.length === 0 && laterTasks.length > 0 && (
+              <div className="ws-glass-card ws-empty" style={{ marginTop: 16 }}>
+                <IonIcon icon={clipboardOutline} className="ws-empty__icon" />
+                <p>Nothing due soon. Your other tasks are under Later.</p>
+              </div>
+            )}
+
+            {laterTasks.length > 0 && (
+              <>
+                <button
+                  type="button"
+                  className="ws-later-toggle"
+                  aria-expanded={showLater}
+                  onClick={() => setShowLater((v) => !v)}
+                >
+                  <span>Later</span>
+                  <span className="ws-later-toggle__count">{laterTasks.length}</span>
+                  <IonIcon icon={showLater ? chevronUpOutline : chevronDownOutline} />
+                </button>
+                {showLater && <div className="ws-task-list">{laterTasks.map(renderTaskCard)}</div>}
+              </>
+            )}
           </>
         )}
       </IonContent>

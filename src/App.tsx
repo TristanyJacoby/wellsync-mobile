@@ -26,6 +26,7 @@ import Onboarding from './pages/Onboarding';
 import Auth from './pages/Auth';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { PomodoroProvider } from './contexts/PomodoroContext';
 import { auth } from './services/firebase';
 import { getProfile } from './services/storage';
 
@@ -96,40 +97,42 @@ function AppShell() {
       ) : !onboarded ? (
         <Onboarding onComplete={() => setOnboarded(true)} />
       ) : (
-        <IonTabs>
-          <IonRouterOutlet>
-            <Route exact path="/home" component={Dashboard} />
-            <Route exact path="/projects" component={Projects} />
-            <Route exact path="/calendar" component={TaskSchedule} />
-            <Route exact path="/frameworks" component={Frameworks} />
-            <Route exact path="/profile" component={Profile} />
-            <Route exact path="/">
-              <Redirect to="/home" />
-            </Route>
-          </IonRouterOutlet>
-          <IonTabBar slot="bottom" id="ws-tab-bar">
-            <IonTabButton tab="home" href="/home">
-              <IonIcon icon={homeOutline} />
-              <IonLabel>Home</IonLabel>
-            </IonTabButton>
-            <IonTabButton tab="projects" href="/projects">
-              <IonIcon icon={clipboardOutline} />
-              <IonLabel>Projects</IonLabel>
-            </IonTabButton>
-            <IonTabButton tab="calendar" href="/calendar">
-              <IonIcon icon={calendarOutline} />
-              <IonLabel>Calendar</IonLabel>
-            </IonTabButton>
-            <IonTabButton tab="frameworks" href="/frameworks">
-              <IonIcon icon={gridOutline} />
-              <IonLabel>Frameworks</IonLabel>
-            </IonTabButton>
-            <IonTabButton tab="profile" href="/profile">
-              <IonIcon icon={personOutline} />
-              <IonLabel>Profile</IonLabel>
-            </IonTabButton>
-          </IonTabBar>
-        </IonTabs>
+        <PomodoroProvider>
+          <IonTabs>
+            <IonRouterOutlet>
+              <Route exact path="/home" component={Dashboard} />
+              <Route exact path="/projects" component={Projects} />
+              <Route exact path="/calendar" component={TaskSchedule} />
+              <Route exact path="/frameworks" component={Frameworks} />
+              <Route exact path="/profile" component={Profile} />
+              <Route exact path="/">
+                <Redirect to="/home" />
+              </Route>
+            </IonRouterOutlet>
+            <IonTabBar slot="bottom" id="ws-tab-bar">
+              <IonTabButton tab="home" href="/home">
+                <IonIcon icon={homeOutline} />
+                <IonLabel>Home</IonLabel>
+              </IonTabButton>
+              <IonTabButton tab="projects" href="/projects">
+                <IonIcon icon={clipboardOutline} />
+                <IonLabel>Projects</IonLabel>
+              </IonTabButton>
+              <IonTabButton tab="calendar" href="/calendar">
+                <IonIcon icon={calendarOutline} />
+                <IonLabel>Calendar</IonLabel>
+              </IonTabButton>
+              <IonTabButton tab="frameworks" href="/frameworks">
+                <IonIcon icon={gridOutline} />
+                <IonLabel>Frameworks</IonLabel>
+              </IonTabButton>
+              <IonTabButton tab="profile" href="/profile">
+                <IonIcon icon={personOutline} />
+                <IonLabel>Profile</IonLabel>
+              </IonTabButton>
+            </IonTabBar>
+          </IonTabs>
+        </PomodoroProvider>
       )}
     </IonReactRouter>
   );
