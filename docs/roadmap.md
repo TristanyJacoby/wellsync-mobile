@@ -153,7 +153,14 @@ Calendar chips, card labels and the Add Task picker read the user's list.
     tasks). Calendar filter chips, the Add Task picker and task pills read from this list.
     - Migrate existing tasks: map `'Work'`/`'Personal'` to the seeded ids on read.
 
-### Phase 6 — Notifications
+### Phase 6 — Notifications ✅ (built 2026-10-25; in-app center + local reminders, push deferred)
+
+Built: `utils/notifications.ts` (derives overdue / due today / starting soon from tasks and
+`reminderStyle`; `reminderTime` decides when a reminder fires), `services/reminders.ts`
+(`@capacitor/local-notifications` on native, Web Notifications in the browser, permission
+requested from a button), `components/NotificationCenter.tsx` opened from the Home bell with
+an unread badge (read ids stored as `seenNotifications` on the user doc), and a finished-round
+entry + alert from `PomodoroContext`. Not yet verified on a device or signed-in browser.
 
 16. **Make the bell work** (tester #1). It currently has no handler in `Dashboard.tsx`.
     - **In-app notification center** — tapping the bell opens a list built on the client

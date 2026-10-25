@@ -114,3 +114,16 @@ export async function deleteProject(id: string): Promise<void> {
   const uid = requireUid();
   await deleteDoc(doc(db, 'users', uid, 'projects', id));
 }
+
+// Ids of notifications the user has opened the bell for. A top-level field on
+// the user doc; ids embed the date, so the list is trimmed to the latest 200.
+export async function getSeenNotifications(): Promise<string[]> {
+  const uid = requireUid();
+  const snapshot = await getDoc(doc(db, 'users', uid));
+  return (snapshot.data()?.seenNotifications as string[] | undefined) ?? [];
+}
+
+export async function saveSeenNotifications(ids: string[]): Promise<void> {
+  const uid = requireUid();
+  await setDoc(doc(db, 'users', uid), { seenNotifications: ids.slice(-200) }, { merge: true });
+}

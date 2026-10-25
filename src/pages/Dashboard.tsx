@@ -1,5 +1,6 @@
 import { IonContent, IonPage, IonIcon, IonModal, useIonViewWillEnter } from '@ionic/react';
 import { useEffect, useMemo, useState } from 'react';
+import { format } from 'date-fns';
 import { useHistory } from 'react-router-dom';
 import {
   addOutline,
@@ -13,7 +14,9 @@ import {
   clipboardOutline,
   timerOutline,
 } from 'ionicons/icons';
-import { getTasks, getProfile, addTask, updateTask, deleteTask } from '../services/storage';
+import { getTasks, getProfile, addTask, updateTask, deleteTask, getSeenNotifications, saveSeenNotifications } from '../services/storage';
+import { getReminderPermission, requestReminderPermission, syncReminders, type ReminderPermission } from '../services/reminders';
+import { buildNotifications, type AppNotification } from '../utils/notifications';
 import { getScheduleRecommendations, isInReminderWindow, type ScoredTask } from '../utils/scheduler';
 import { priorityPillStyle, statusPillStyle, toggleDone, cycleStatus, stopping } from '../utils/board';
 import { useUndoToast } from '../hooks/useUndoToast';
@@ -22,6 +25,7 @@ import Avatar from '../components/Avatar';
 import ProgressRing from '../components/ProgressRing';
 import TaskProgressBar from '../components/TaskProgressBar';
 import FocusPanel from '../components/FocusPanel';
+import NotificationCenter from '../components/NotificationCenter';
 import { usePomodoro, formatClock } from '../contexts/PomodoroContext';
 import AddTask from './AddTask';
 import type { Task, OnboardingProfile, TaskStatus } from '../types';
@@ -51,6 +55,9 @@ export default function Dashboard() {
   // celebration animation would have zero time to play at all.
   const [celebrating, setCelebrating] = useState<Task | null>(null);
   const [showLater, setShowLater] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [seen, setSeen] = useState<string[]>([]);
+  const [permission, setPermission] = useState<ReminderPermission>('unsupported');
   const showUndo = useUndoToast();
   const pomodoro = usePomodoro();
 
@@ -74,6 +81,49 @@ export default function Dashboard() {
   function refresh() {
     getTasks().then(setTasks);
     getProfile().then(setProfile);
+    getSeenNotifications().then(setSeen);
+    getReminderPermission().then(setPermission);
+  }
+
+  // Native builds keep one scheduled reminder per open task in step with the
+  // task list (added, edited, finished or deleted all land here via `tasks`).
+  useEffect(() => {
+    syncReminders(tasks, profile?.reminderStyle).catch((err) => console.error('Failed to sync reminders', err));
+  }, [tasks, profile?.reminderStyle]);
+
+  const notifications = useMemo((): AppNotification[] => {
+    const rounds: AppNotification[] = pomodoro.finished
+      .filter((r) => r.mode === 'focus')
+      .map((r) => ({
+        id: r.id,
+        kind: 'pomodoro',
+        title: r.taskTitle,
+        body: `Focus session finished at ${format(r.at, 'h:mm a')}`,
+      }));
+    return [...buildNotifications(tasks, profile?.reminderStyle), ...rounds.reverse()];
+  }, [tasks, profile?.reminderStyle, pomodoro.finished]);
+
+  const unread = useMemo(
+    () => new Set(notifications.filter((n) => !seen.includes(n.id)).map((n) => n.id)),
+    [notifications, seen]
+  );
+
+  function openNotifications() {
+    setShowNotifications(true);
+  }
+
+  function closeNotifications() {
+    setShowNotifications(false);
+    const next = [...seen, ...unread];
+    if (unread.size) {
+      setSeen(next);
+      saveSeenNotifications(next).catch((err) => console.error('Failed to save read state', err));
+    }
+  }
+
+  async function enableReminders() {
+    setPermission(await requestReminderPermission());
+    syncReminders(tasks, profile?.reminderStyle).catch((err) => console.error('Failed to sync reminders', err));
   }
 
   const total = tasks.length;
@@ -238,8 +288,13 @@ export default function Dashboard() {
             <button className="ws-icon-btn ws-icon-btn--dark" aria-label="Add task" onClick={() => setShowAddTask(true)}>
               <IonIcon icon={addOutline} style={{ fontSize: 20 }} />
             </button>
-            <button className="ws-icon-btn" aria-label="Notifications">
+            <button
+              className="ws-icon-btn ws-icon-btn--bell"
+              aria-label={unread.size ? `Notifications, ${unread.size} unread` : 'Notifications'}
+              onClick={openNotifications}
+            >
               <IonIcon icon={notificationsOutline} style={{ fontSize: 18 }} />
+              {unread.size > 0 && <span className="ws-icon-btn__badge">{unread.size > 9 ? '9+' : unread.size}</span>}
             </button>
           </div>
         </div>
@@ -354,6 +409,21 @@ export default function Dashboard() {
           </>
         )}
       </IonContent>
+
+      <IonModal isOpen={showNotifications} onDidDismiss={closeNotifications}>
+        <NotificationCenter
+          notifications={notifications}
+          unread={unread}
+          permission={permission}
+          onEnable={enableReminders}
+          onOpenTask={(id) => {
+            const task = tasks.find((t) => t.id === id);
+            closeNotifications();
+            if (task) setEditingTask(task);
+          }}
+          onClose={closeNotifications}
+        />
+      </IonModal>
 
       <IonModal
         isOpen={showAddTask || !!editingTask}

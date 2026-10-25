@@ -2176,3 +2176,114 @@ ion-alert:is(.md, .ios) .alert-button-role-destructive {
     box-shadow: 0 0 60px rgba(94, 63, 107, 0.25);
   }
 }
+
+/* ---------- Notification center (Home bell) ---------- */
+
+.ws-icon-btn--bell {
+  position: relative;
+}
+
+.ws-icon-btn__badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--ws-high-text);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+}
+
+.ws-notif-enable {
+  margin-top: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ws-notif-enable p {
+  font-size: 14px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ws-notif {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--ws-glass-border);
+  font: inherit;
+  text-align: left;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-notif:disabled {
+  cursor: default;
+}
+
+.ws-notif__icon {
+  font-size: 22px;
+  display: flex;
+}
+
+.ws-notif__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ws-notif__text strong {
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-notif__text span {
+  font-size: 13px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-notif--unread {
+  box-shadow: var(--ws-glass-shadow);
+}
+
+.ws-notif__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ws-high-text);
+  flex-shrink: 0;
+}
+
+.ws-notif-empty {
+  margin-top: 64px;
+  text-align: center;
+  color: var(--ws-ink-faint);
+}
+
+.ws-notif-empty ion-icon {
+  font-size: 40px;
+}
+
+.ws-notif-empty p {
+  margin-top: 8px;
+  font-size: 14px;
+}

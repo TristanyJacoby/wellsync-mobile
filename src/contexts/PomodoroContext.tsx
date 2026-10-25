@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { recordFocusSession } from '../services/storage';
+import { notifyNow } from '../services/reminders';
 import type { Task } from '../types';
 
 export type PomodoroMode = 'focus' | 'break';
@@ -36,6 +37,15 @@ interface PomodoroValue {
   stop: () => void;
   /** Bumps each time a focus session is saved, so pages can refetch. */
   sessionsSaved: number;
+  /** Rounds finished this session (newest last), for the notification center. */
+  finished: FinishedRound[];
+}
+
+export interface FinishedRound {
+  id: string;
+  taskTitle: string;
+  mode: PomodoroMode;
+  at: number;
 }
 
 const PomodoroContext = createContext<PomodoroValue | null>(null);
@@ -67,6 +77,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
   const [preset, setPreset] = useState<PomodoroPreset>(POMODORO_PRESETS[0]);
   const [now, setNow] = useState(Date.now());
   const [sessionsSaved, setSessionsSaved] = useState(0);
+  const [finished, setFinished] = useState<FinishedRound[]>([]);
   const timerRef = useRef(timer);
   const presetRef = useRef(preset);
   presetRef.current = preset;
@@ -96,6 +107,11 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
         update({ ...t, mode: 'focus', endsAt: null, remainingMs: focus * 60_000 });
       }
       chime();
+      setFinished((f) => [...f, { id: `pomodoro:${n}`, taskTitle: t.taskTitle, mode: t.mode, at: n }].slice(-20));
+      notifyNow(
+        t.mode === 'focus' ? 'Focus session done' : 'Break over',
+        t.mode === 'focus' ? `Nice work on "${t.taskTitle}". Take a short break.` : `Ready for another round on "${t.taskTitle}"?`
+      );
     }, 500);
     return () => clearInterval(id);
   }, [timer?.endsAt, update]);
@@ -132,6 +148,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
     },
     stop: () => update(null),
     sessionsSaved,
+    finished,
   };
 
   return <PomodoroContext.Provider value={value}>{children}</PomodoroContext.Provider>;
