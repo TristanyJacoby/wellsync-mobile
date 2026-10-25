@@ -357,3 +357,32 @@ function cssFor(p: Palette): string {
 export function premiumThemeCss(): string {
   return PALETTES.map(cssFor).join('\n\n');
 }
+
+/** Background, text and tagline colors for the launch splash, so it opens in the app's current theme. */
+export function splashColors(id: Theme): { bg: string; ink: string; muted: string } {
+  const p = PALETTES.find((x) => x.id === id);
+  if (p) return { bg: swatchOf(p.gradient), ink: p.ink, muted: p.inkMuted };
+  if (id === 'light') return { bg: THEMES[0].swatch, ink: '#1a1a1e', muted: '#6b6b72' };
+  return { bg: THEMES[1].swatch, ink: '#f1f3f6', muted: '#b7c2d0' };
+}
+
+const LAST_THEME_KEY = 'ws-last-theme';
+
+/** The theme this phone last showed. A boot hint only (the real preference lives in Firestore): the
+ * splash plays before sign-in, so it cannot ask Firestore yet. */
+export function readLastTheme(): Theme {
+  try {
+    const t = localStorage.getItem(LAST_THEME_KEY) as Theme | null;
+    return t && THEMES.some((x) => x.id === t) ? t : 'dark';
+  } catch {
+    return 'dark';
+  }
+}
+
+export function rememberTheme(id: Theme) {
+  try {
+    localStorage.setItem(LAST_THEME_KEY, id);
+  } catch {
+    // Private mode or blocked storage: the splash just opens in the default theme.
+  }
+}

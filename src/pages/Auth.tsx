@@ -66,7 +66,10 @@ export default function Auth() {
       if (Capacitor.isNativePlatform()) await signInWithCredential(auth, await nativeGoogleCredential());
       else await signInWithPopup(auth, googleProvider);
     } catch (err) {
-      setError(friendlyError(err));
+      // Firebase errors have a code and a friendly message; the native Google picker's errors only
+      // have a message ("cancelled", a setup problem...), which is more useful than a generic line.
+      const plain = !(err as AuthError)?.code && err instanceof Error ? err.message : '';
+      setError(plain ? `Google sign-in did not finish: ${plain}` : friendlyError(err));
     } finally {
       setSubmitting(false);
     }

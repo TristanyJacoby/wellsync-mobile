@@ -4,8 +4,8 @@ const config: CapacitorConfig = {
   appId: 'com.wellworksco.wellsync',
   appName: 'WellSync',
   webDir: 'dist',
-  // The logo's yellow: shown behind the web view while it loads, so launch has no white flash.
-  backgroundColor: '#ffde59',
+  // The default (dark) theme's navy: shown behind the web view while it loads, so launch has no white flash.
+  backgroundColor: '#16212e',
 };
 
 export default config;

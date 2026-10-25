@@ -4066,10 +4066,18 @@ ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  /* The logo's own yellow, as a fixed color: it must match the native launch screen exactly. */
-  background: #ffde59;
-  color: #1a1a1e;
+  /* Overridden inline with the current theme's colors; this is the default (dark) theme. */
+  background: linear-gradient(135deg, #16212e 0%, #1f2f45 50%, #28405e 100%);
+  color: #f1f3f6;
   transition: opacity 0.45s ease;
+  /* Android shows its own navy launch window first; fade into the theme's color instead of cutting. */
+  animation: ws-splash-in 0.3s ease-out backwards;
+}
+
+@keyframes ws-splash-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .ws-splash.is-leaving {
@@ -4079,13 +4087,16 @@ ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
 
 /* The logo drops in slightly oversized and settles with a small bounce. */
 .ws-splash__logo {
+  /* The logo is a yellow square: rounded into a tile it sits well on any theme color. */
+  border-radius: 24%;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
   margin-bottom: 10px;
   animation: ws-splash-land 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
 }
 
 .ws-splash__name {
-  /* Explicit: the app's global text color follows the theme, and the splash is always on yellow. */
-  color: #1a1a1e;
+  /* Explicit: the app's global text color is the theme's, but this must follow the splash's own. */
+  color: inherit;
   font-size: 30px;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -4096,7 +4107,7 @@ ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
 .ws-splash__tagline {
   font-size: 13px;
   font-weight: 600;
-  color: rgba(26, 26, 30, 0.62);
+  color: var(--ws-splash-muted, rgba(245, 245, 247, 0.62));
   opacity: 0;
   animation: ws-splash-rise 0.6s ease-out 1.2s forwards;
 }

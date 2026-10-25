@@ -18,10 +18,16 @@ await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r:
   .png()
   .toFile('assets/icon-foreground.png');
 
-// Launch screen: the logo centered on the same yellow.
+// Launch screen: the logo as a rounded tile on the default theme's navy (what the app opens in).
+const NAVY = { r: 0x16, g: 0x21, b: 0x2e, alpha: 1 };
+const tile = async (size) => {
+  const radius = Math.round(size * 0.24);
+  const mask = Buffer.from(`<svg width="${size}" height="${size}"><rect width="${size}" height="${size}" rx="${radius}" fill="#fff"/></svg>`);
+  return sharp(await resized(size)).composite([{ input: mask, blend: 'dest-in' }]).png().toBuffer();
+};
 for (const name of ['splash', 'splash-dark']) {
-  await sharp({ create: { width: 2732, height: 2732, channels: 4, background: YELLOW } })
-    .composite([{ input: await resized(1000), gravity: 'center' }])
+  await sharp({ create: { width: 2732, height: 2732, channels: 4, background: NAVY } })
+    .composite([{ input: await tile(900), gravity: 'center' }])
     .png()
     .toFile(`assets/${name}.png`);
 }

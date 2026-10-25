@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { getTheme, saveTheme } from '../services/storage';
 import { useAuth } from './AuthContext';
 import { usePlan } from './PlanContext';
-import { isPremiumTheme, premiumThemeCss } from '../theme/themes';
+import { isPremiumTheme, premiumThemeCss, rememberTheme } from '../theme/themes';
 import type { Theme } from '../types';
 
 interface ThemeContextValue {
@@ -56,6 +56,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', appliedTheme);
+    rememberTheme(appliedTheme);
   }, [appliedTheme]);
 
   function setTheme(next: Theme) {

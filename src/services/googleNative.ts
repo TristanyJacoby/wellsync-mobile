@@ -16,7 +16,8 @@ let initialized: Promise<void> | null = null;
 export async function nativeGoogleCredential(): Promise<AuthCredential> {
   initialized ??= SocialLogin.initialize({ google: { webClientId: WEB_CLIENT_ID } });
   await initialized;
-  const { result } = await SocialLogin.login({ provider: 'google', options: { scopes: ['email', 'profile'] } });
+  // No `scopes`: the plugin refuses them unless MainActivity is customized, and the ID token already carries email and profile.
+  const { result } = await SocialLogin.login({ provider: 'google', options: {} });
   if (result.responseType !== 'online' || !result.idToken) throw new Error('Google did not return an ID token.');
   return GoogleAuthProvider.credential(result.idToken);
 }
