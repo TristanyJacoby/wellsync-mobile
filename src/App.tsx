@@ -24,6 +24,8 @@ import Frameworks from './pages/Frameworks';
 import Profile from './pages/Profile';
 import Onboarding from './pages/Onboarding';
 import Auth from './pages/Auth';
+import VerifyEmail from './pages/VerifyEmail';
+import { mustVerifyFirst } from './utils/verification';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PomodoroProvider } from './contexts/PomodoroContext';
@@ -114,6 +116,8 @@ function AppShell() {
     <IonReactRouter>
       {!user ? (
         <Auth />
+      ) : mustVerifyFirst(user) ? (
+        <VerifyEmail />
       ) : !onboarded ? (
         <Onboarding onComplete={() => setOnboarded(true)} />
       ) : (

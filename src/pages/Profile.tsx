@@ -12,6 +12,7 @@ import { personaFor } from '../utils/persona';
 import Avatar from '../components/Avatar';
 import StatCard from '../components/StatCard';
 import EditProfile from '../components/EditProfile';
+import VerifyBanner from '../components/VerifyBanner';
 import ThemePicker from '../components/ThemePicker';
 import Onboarding from './Onboarding';
 import type { OnboardingProfile, Task } from '../types';
@@ -127,6 +128,8 @@ export default function Profile() {
             </div>
           )}
         </div>
+
+        <VerifyBanner />
 
         <div className="ws-stat-carousel" ref={carouselRef}>
           <div className={`ws-stat-carousel__item${focusedIndex === 0 ? ' is-focused' : ''}`}>

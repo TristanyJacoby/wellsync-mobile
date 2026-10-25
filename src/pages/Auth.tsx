@@ -2,6 +2,7 @@ import { IonContent, IonPage, IonInput } from '@ionic/react';
 import { useState } from 'react';
 import {
   createUserWithEmailAndPassword,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signInWithPopup,
   AuthError,
@@ -41,7 +42,10 @@ export default function Auth() {
       if (mode === 'login') {
         await signInWithEmailAndPassword(auth, email.trim(), password);
       } else {
-        await createUserWithEmailAndPassword(auth, email.trim(), password);
+        const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        // The app stays locked behind the "verify your email" screen until they click the link.
+        // A failed send isn't fatal: that screen has a Resend button.
+        await sendEmailVerification(cred.user).catch((err) => console.error('Failed to send verification email', err));
       }
       // No navigation needed here - App.tsx's onAuthStateChanged listener
       // picks up the new session and swaps this screen out automatically.
