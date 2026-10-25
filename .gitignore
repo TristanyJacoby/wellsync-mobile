@@ -6,3 +6,4 @@ ios/
 *.log
 .env
 .env.local
+*.apk

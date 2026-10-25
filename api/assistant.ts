@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { authenticate, getPlan } from './_lib/admin.js';
+import { handleCors } from './_lib/cors.js';
 import { draftReply, type Ctx, type Msg } from './_lib/rules.js';
 import { groqReply } from './_lib/groq.js';
 
@@ -16,6 +17,7 @@ const clean = (s: unknown, max = MAX_CHARS) => String(s ?? '').trim().slice(0, m
  * the server and not only by the UI.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (handleCors(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
   const uid = await authenticate(req, res);
   if (!uid) return;

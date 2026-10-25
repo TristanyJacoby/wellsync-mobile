@@ -245,7 +245,16 @@ Depends on Phase 4 (phases). This is the monetization feature for the pitch.
       and by the endpoint); after mock Subscribe, a one-line prompt leads to option chips
       and then a task with phases that saves correctly.
 
-### Phase 9 — Demo polish & device test
+### Phase 9 — Demo polish & device test (in progress, 2026-10-26)
+
+Done: empty states exist on every screen and panel (Home filters, In Progress, Calendar day,
+Projects, each framework, notification center, task pop-ups); the app is wired for native
+(`services/assistant.ts` calls the deployed site when running in the app, `api/_lib/cors.ts`
+lets the app's origin call the functions, the Google button is replaced by a hint in the
+app because Google sign-in is a browser popup). Debug APK: `npm run build`, `npx cap sync
+android`, then `./gradlew assembleDebug` in `android/` with a Java 17-21 `JAVA_HOME`
+(Gradle wrapper bumped to 8.7; `android/` is gitignored). Still to do: install on a real
+phone and confirm sign-in, Firestore sync and local notifications there.
 
 26. Empty states for every screen and new panel (focus panel, Done archive, each
     framework, notification center).

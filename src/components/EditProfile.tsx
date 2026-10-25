@@ -8,6 +8,7 @@ import {
   sendPasswordResetEmail,
   updatePassword,
 } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
 import { useRef, useState } from 'react';
 import { auth, googleProvider } from '../services/firebase';
 import { saveProfile } from '../services/storage';
@@ -130,6 +131,10 @@ export default function EditProfile({
         setPwMsg({ ok: true, text: 'Password updated.' });
       } else {
         // Google-only account: confirm it is really them, then add an email + password login.
+        if (Capacitor.isNativePlatform()) {
+          setPwMsg({ ok: false, text: 'Setting a password needs a browser. Open the WellSync website, sign in with Google and do it there.' });
+          return;
+        }
         await reauthenticateWithPopup(u, googleProvider);
         await linkWithCredential(u, EmailAuthProvider.credential(u.email, next));
         await u.reload();

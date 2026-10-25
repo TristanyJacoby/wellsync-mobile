@@ -1,4 +1,5 @@
 import { IonContent, IonPage, IonInput } from '@ionic/react';
+import { Capacitor } from '@capacitor/core';
 import { useState } from 'react';
 import {
   createUserWithEmailAndPassword,
@@ -111,9 +112,17 @@ export default function Auth() {
             {mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
 
-          <button className="ws-button-google" style={{ marginTop: 10 }} disabled={submitting} onClick={handleGoogle}>
-            Continue with Google
-          </button>
+          {Capacitor.isNativePlatform() ? (
+            // Google's sign-in is a browser popup, which Android's WebView can't show.
+            <p className="ws-field-hint" style={{ marginTop: 14, textAlign: 'center' }}>
+              Signed up with Google? Open the website, go to Profile &rarr; Edit profile &rarr; Set a password, then sign in
+              here with your email and that password.
+            </p>
+          ) : (
+            <button className="ws-button-google" style={{ marginTop: 10 }} disabled={submitting} onClick={handleGoogle}>
+              Continue with Google
+            </button>
+          )}
 
           <p style={{ textAlign: 'center', marginTop: 22, fontSize: 14, color: 'var(--ws-ink-muted)' }}>
             {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}

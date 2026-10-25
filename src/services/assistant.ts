@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import { auth } from './firebase';
 import type { Plan, Priority } from '../types';
 
@@ -43,10 +44,14 @@ export class AssistantError extends Error {
   }
 }
 
+// In the browser the functions are same-origin (/api/...). The installed app has no server of its
+// own, so it calls the deployed site instead.
+const API_BASE = Capacitor.isNativePlatform() ? import.meta.env.VITE_API_BASE_URL || 'https://wellsync-mobile.vercel.app' : '';
+
 async function post<T>(path: string, body: unknown): Promise<T> {
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new AssistantError('unauthenticated');
-  const res = await fetch(path, {
+  const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify(body),

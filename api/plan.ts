@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { authenticate, userDoc } from './_lib/admin.js';
+import { handleCors } from './_lib/cors.js';
 
 /**
  * DEMO checkout for WellSync Plus: no payment is taken. The plan lives only
@@ -7,6 +8,7 @@ import { authenticate, userDoc } from './_lib/admin.js';
  * writing `plan` itself.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (handleCors(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
   const uid = await authenticate(req, res);
   if (!uid) return;
