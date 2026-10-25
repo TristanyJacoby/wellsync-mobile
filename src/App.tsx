@@ -33,6 +33,7 @@ import { TaskChangeProvider } from './contexts/TaskChangeContext';
 import { PlanProvider } from './contexts/PlanContext';
 import { AvatarProvider } from './contexts/AvatarContext';
 import CreateMenu from './components/CreateMenu';
+import { useTabClickGuard } from './hooks/useTabClickGuard';
 import { auth } from './services/firebase';
 import { getProfile } from './services/storage';
 
@@ -57,6 +58,12 @@ function TabDirection() {
       previous.current = next;
     }
   }, [pathname]);
+  return null;
+}
+
+/** Spaces out tab taps so a burst of them cannot lock Ionic's router (see useTabClickGuard). */
+function TabClickGuard() {
+  useTabClickGuard('ws-tab-bar');
   return null;
 }
 
@@ -158,7 +165,8 @@ function AppShell() {
                 </IonTabButton>
               </IonTabBar>
             </IonTabs>
-            <CreateMenu />
+            <TabClickGuard />
+          <CreateMenu />
           </TaskChangeProvider>
         </PomodoroProvider>
       )}
