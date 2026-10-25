@@ -1,6 +1,6 @@
 import { collection, deleteDoc, doc, getDoc, getDocs, increment, query, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase';
-import type { Task, OnboardingProfile, Project, Theme, CategoryDef } from '../types';
+import type { Task, OnboardingProfile, Project, Theme, CategoryDef, Plan } from '../types';
 import { DEFAULT_CATEGORIES } from '../utils/categories';
 
 // Every read/write is scoped to the signed-in user: tasks live at
@@ -126,4 +126,11 @@ export async function getSeenNotifications(): Promise<string[]> {
 export async function saveSeenNotifications(ids: string[]): Promise<void> {
   const uid = requireUid();
   await setDoc(doc(db, 'users', uid), { seenNotifications: ids.slice(-200) }, { merge: true });
+}
+
+/** Read-only here: firestore.rules only lets the server (api/plan.ts) write it. */
+export async function getPlan(): Promise<Plan> {
+  const uid = requireUid();
+  const snapshot = await getDoc(doc(db, 'users', uid));
+  return snapshot.data()?.plan === 'plus' ? 'plus' : 'free';
 }

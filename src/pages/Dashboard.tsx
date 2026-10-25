@@ -5,6 +5,7 @@ import { useHistory } from 'react-router-dom';
 import {
   addOutline,
   notificationsOutline,
+  sparklesOutline,
   chevronDownOutline,
   chevronUpOutline,
   checkmarkOutline,
@@ -26,6 +27,7 @@ import ProgressRing from '../components/ProgressRing';
 import TaskProgressBar from '../components/TaskProgressBar';
 import FocusPanel from '../components/FocusPanel';
 import NotificationCenter from '../components/NotificationCenter';
+import AssistantSheet from '../components/AssistantSheet';
 import { usePomodoro, formatClock } from '../contexts/PomodoroContext';
 import AddTask from './AddTask';
 import type { Task, OnboardingProfile, TaskStatus } from '../types';
@@ -56,6 +58,7 @@ export default function Dashboard() {
   const [celebrating, setCelebrating] = useState<Task | null>(null);
   const [showLater, setShowLater] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAssistant, setShowAssistant] = useState(false);
   const [seen, setSeen] = useState<string[]>([]);
   const [permission, setPermission] = useState<ReminderPermission>('unsupported');
   const showUndo = useUndoToast();
@@ -288,6 +291,9 @@ export default function Dashboard() {
             <button className="ws-icon-btn ws-icon-btn--dark" aria-label="Add task" onClick={() => setShowAddTask(true)}>
               <IonIcon icon={addOutline} style={{ fontSize: 20 }} />
             </button>
+            <button className="ws-icon-btn" aria-label="Task assistant" onClick={() => setShowAssistant(true)}>
+              <IonIcon icon={sparklesOutline} style={{ fontSize: 18 }} />
+            </button>
             <button
               className="ws-icon-btn ws-icon-btn--bell"
               aria-label={unread.size ? `Notifications, ${unread.size} unread` : 'Notifications'}
@@ -409,6 +415,8 @@ export default function Dashboard() {
           </>
         )}
       </IonContent>
+
+      <AssistantSheet isOpen={showAssistant} onClose={() => setShowAssistant(false)} onCreated={refresh} />
 
       <IonModal isOpen={showNotifications} onDidDismiss={closeNotifications}>
         <NotificationCenter

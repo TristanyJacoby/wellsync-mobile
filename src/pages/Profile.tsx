@@ -3,13 +3,14 @@ import { useEffect, useRef, useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { pencilOutline, clipboardOutline, checkmarkDoneOutline, hourglassOutline, statsChartOutline } from 'ionicons/icons';
 import { auth } from '../services/firebase';
-import { getProfile, getTasks } from '../services/storage';
+import { getProfile, getTasks, getPlan } from '../services/storage';
+import { setPlan } from '../services/assistant';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import Avatar from '../components/Avatar';
 import StatCard from '../components/StatCard';
 import Onboarding from './Onboarding';
-import type { OnboardingProfile, Task, Theme } from '../types';
+import type { OnboardingProfile, Plan, Task, Theme } from '../types';
 
 const THEME_OPTIONS: { id: Theme; label: string; swatch: string }[] = [
   { id: 'dark', label: 'Dark', swatch: 'linear-gradient(135deg, #16212e 0%, #1f2f45 50%, #28405e 100%)' },
@@ -38,6 +39,8 @@ export default function Profile() {
   const [profile, setProfile] = useState<OnboardingProfile | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingPreferences, setEditingPreferences] = useState(false);
+  const [plan, setPlanState] = useState<Plan>('free');
+  const [planBusy, setPlanBusy] = useState(false);
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
 
@@ -81,6 +84,18 @@ export default function Profile() {
   function refresh() {
     getProfile().then(setProfile);
     getTasks().then(setTasks);
+    getPlan().then(setPlanState).catch(() => undefined);
+  }
+
+  async function changePlan(action: 'subscribe' | 'cancel') {
+    setPlanBusy(true);
+    try {
+      setPlanState(await setPlan(action));
+    } catch (err) {
+      console.error('Failed to change plan', err);
+    } finally {
+      setPlanBusy(false);
+    }
   }
 
   const total = tasks.length;
@@ -166,6 +181,26 @@ export default function Profile() {
             <span className="ws-info-row__value">
               {(profile?.reminderStyle && REMINDER_LABEL[profile.reminderStyle]) || 'Not set'}
             </span>
+          </div>
+        </div>
+
+        <div className="ws-section-header" style={{ marginTop: 24 }}>
+          <h3>Plan</h3>
+        </div>
+        <div className="ws-glass-card" style={{ padding: '4px 18px', marginTop: 10 }}>
+          <div className="ws-info-row">
+            <span className="ws-info-row__label">WellSync Plus (demo)</span>
+            <span className="ws-info-row__value">{plan === 'plus' ? 'Active' : 'Free'}</span>
+          </div>
+          <div className="ws-info-row">
+            <span className="ws-info-row__label">Task assistant</span>
+            <button
+              className="ws-section-header__link"
+              disabled={planBusy}
+              onClick={() => changePlan(plan === 'plus' ? 'cancel' : 'subscribe')}
+            >
+              {plan === 'plus' ? 'Cancel (demo)' : 'Try Plus (demo)'}
+            </button>
           </div>
         </div>
 

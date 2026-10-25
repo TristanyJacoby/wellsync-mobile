@@ -2,6 +2,7 @@ import { IonContent, IonInput, IonTextarea, IonSelect, IonSelectOption, IonIcon,
 import { useEffect, useState } from 'react';
 import {
   closeOutline,
+  sparklesOutline,
   checkmarkOutline,
   addOutline,
   removeOutline,
@@ -14,6 +15,7 @@ import {
 import { addTask, updateTask, getProjects, getCategories } from '../services/storage';
 import { DEFAULT_CATEGORIES } from '../utils/categories';
 import { assignQuadrant } from '../utils/scheduler';
+import AssistantSheet from '../components/AssistantSheet';
 import type { Task, TaskPhase, Priority, Category, CategoryDef, Project } from '../types';
 
 const PRIORITY_OPTIONS: { id: Priority; label: string; bg: string; text: string }[] = [
@@ -31,6 +33,8 @@ const PRIORITY_OPTIONS: { id: Priority; label: string; bg: string; text: string 
 // (saves via updateTask, preserving its id/createdAt/status) instead of
 // creating a new one. Phase ticks made here save with the rest of the form.
 export default function AddTask({ onClose, editTask }: { onClose: () => void; editTask?: Task }) {
+  const [showAssistant, setShowAssistant] = useState(false);
+  const [aiCreated, setAiCreated] = useState(false);
   const [title, setTitle] = useState(editTask?.title ?? '');
   const [description, setDescription] = useState(editTask?.description ?? '');
   const [dueDate, setDueDate] = useState(editTask?.dueDate ?? '');
@@ -161,6 +165,12 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
             <IonIcon icon={checkmarkOutline} style={{ fontSize: 20 }} />
           </button>
         </div>
+
+        {!isEditing && (
+          <button type="button" className="ws-assistant-link" onClick={() => setShowAssistant(true)}>
+            <IonIcon icon={sparklesOutline} /> Draft with the task assistant
+          </button>
+        )}
 
         {/* 1. What - the only part every task needs. */}
         <section className="ws-glass-card ws-form-card" style={{ marginTop: 20 }}>
@@ -413,6 +423,16 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
           {isEditing ? 'Save Changes' : 'Create Task'}
         </button>
       </IonContent>
+
+      <AssistantSheet
+        isOpen={showAssistant}
+        onCreated={() => setAiCreated(true)}
+        onClose={() => {
+          setShowAssistant(false);
+          // The assistant already saved a task, so this blank form is done.
+          if (aiCreated) onClose();
+        }}
+      />
     </>
   );
 }

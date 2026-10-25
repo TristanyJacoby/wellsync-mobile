@@ -2287,3 +2287,377 @@ ion-alert:is(.md, .ios) .alert-button-role-destructive {
   margin-top: 8px;
   font-size: 14px;
 }
+
+/* ---------- Frameworks: Kanban, Frog, 1-3-5, Ivy Lee, MoSCoW ---------- */
+
+.ws-fw-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ws-fw-hint {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ws-ink-muted);
+}
+
+.ws-fw-empty {
+  padding: 12px 4px;
+  font-size: 13px;
+  color: var(--ws-ink-faint);
+}
+
+.ws-fw-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--ws-glass-border);
+  font: inherit;
+  text-align: left;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-fw-row__lead {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--ws-dark);
+  color: var(--ws-dark-ink);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 28px;
+  text-align: center;
+}
+
+.ws-fw-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ws-fw-row__text strong {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-fw-row__text span {
+  font-size: 12px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-fw-slot {
+  padding: 12px 14px;
+  border: 1.5px dashed var(--ws-glass-border);
+  border-radius: var(--ws-radius-md);
+  font-size: 13px;
+  color: var(--ws-ink-faint);
+}
+
+/* Eat the Frog */
+.ws-frog {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+}
+
+.ws-frog__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ws-low-text);
+}
+
+.ws-frog__title {
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: left;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-frog__meta,
+.ws-frog__hint {
+  font-size: 13px;
+  color: var(--ws-ink-muted);
+}
+
+/* Kanban: columns scroll sideways, one and a bit visible on a phone */
+.ws-kanban {
+  display: flex;
+  gap: 10px;
+  margin: 0 -16px;
+  padding: 0 16px 8px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+}
+
+.ws-kanban__col {
+  flex: 0 0 74%;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scroll-snap-align: start;
+}
+
+.ws-kanban__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: var(--ws-radius-sm);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ws-kanban__count {
+  font-size: 12px;
+}
+
+.ws-kanban__card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+}
+
+.ws-kanban__title {
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  overflow-wrap: anywhere;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-kanban__meta {
+  font-size: 12px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-kanban__moves {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.ws-kanban__moves .ws-round-btn:disabled {
+  opacity: 0.3;
+}
+
+/* ---------- Task assistant (WellSync Plus, demo) ---------- */
+
+.ws-error {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--ws-high-text);
+}
+
+.ws-assistant-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-inprogress-bg);
+  color: var(--ws-inprogress-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ws-plus {
+  margin-top: 20px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ws-plus h3 {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.ws-plus__tag {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-medium-bg);
+  color: var(--ws-medium-text);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.ws-plus__price {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.ws-plus__price span {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ws-ink-muted);
+}
+
+.ws-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding-bottom: 80px;
+}
+
+.ws-chat__bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 18px 18px 18px 4px;
+  background: var(--ws-glass-bg-strong);
+  color: var(--ws-ink);
+  font-size: 14px;
+  line-height: 1.45;
+  align-self: flex-start;
+}
+
+.ws-chat__bubble--user {
+  align-self: flex-end;
+  border-radius: 18px 18px 4px 18px;
+  background: var(--ws-dark);
+  color: var(--ws-dark-ink);
+}
+
+.ws-chat__bubble--typing {
+  color: var(--ws-ink-muted);
+}
+
+.ws-chat__chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ws-chat__done {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-dark);
+  color: var(--ws-dark-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ws-chat__done:disabled {
+  opacity: 0.4;
+}
+
+.ws-chat__input {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 8px;
+  padding: 10px 0 4px;
+}
+
+.ws-chat__input input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 18px;
+  height: 44px;
+  border: 1px solid var(--ws-glass-border);
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-glass-bg-strong);
+  color: var(--ws-ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.ws-draft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+
+.ws-draft input,
+.ws-draft select {
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--ws-glass-border);
+  border-radius: var(--ws-radius-sm);
+  background: var(--ws-glass-bg-strong);
+  color: var(--ws-ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.ws-draft__title {
+  font-size: 17px !important;
+  font-weight: 800;
+}
+
+.ws-draft__row {
+  display: flex;
+  gap: 8px;
+}
+
+.ws-draft__row label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-draft__add {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ws-inprogress-text);
+}
+
+.ws-draft__done {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-weight: 700;
+  color: var(--ws-low-text);
+}

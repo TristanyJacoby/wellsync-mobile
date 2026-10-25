@@ -174,7 +174,12 @@ entry + alert from `PomodoroContext`. Not yet verified on a device or signed-in 
       starting it, fix `VITE_FIREBASE_MESSAGING_SENDER_ID`: it currently holds a Google
       Analytics ID, not the numeric sender ID (fix it in `.env` and on Vercel).
 
-### Phase 7 — Five more frameworks
+### Phase 7 — Five more frameworks ✅ (built 2026-10-25; not yet checked signed-in)
+
+Built: sorting rules in `utils/frameworks.ts`, views in `components/FrameworkViews.tsx`, entries
+in `FRAMEWORKS` (Frameworks.tsx). Kanban moves cards with arrow buttons (no drag-and-drop).
+MoSCoW: high due within 7 days or any overdue non-low = Must; 1-3-5 overflows into the next
+smaller group when a size is full.
 
 The Frameworks tab is the product's core idea. Each new framework is an entry in the
 `FRAMEWORKS` array in `Frameworks.tsx` and must sort the user's **existing** tasks
@@ -203,7 +208,14 @@ duplicate Eisenhower/MoSCoW sorting).
 - *Acceptance check:* the same task list looks different, and sensible, in all six
   frameworks.
 
-### Phase 8 — AI Task Assistant (WellSync Plus, demo paywall)
+### Phase 8 — AI Task Assistant (WellSync Plus, demo paywall) ✅ code built 2026-10-25; NOT yet run end to end
+
+Built: `api/assistant.ts` (Plus check, input caps) answering from Groq's free tier (`api/_lib/groq.ts`, 20 calls/user/day) and falling back to `api/_lib/rules.ts`, a rule-based drafter, if there's no key, the call fails or the cap is hit,
+`api/plan.ts` (mock subscribe/cancel via Admin SDK), `api/_lib/admin.ts`, `firestore.rules`
+(client can't write `plan`), `vercel.json` (rewrite skips `/api`), `services/assistant.ts`,
+`components/AssistantSheet.tsx` (chat + paywall + editable draft), sparkle buttons on Home and
+Add Task, Plan row on Profile. **To go live:** set `FIREBASE_SERVICE_ACCOUNT` (and optionally `GROQ_API_KEY`) in Vercel, deploy `firestore.rules`, redeploy. `/api` does not run
+under plain `vite dev`; use `vercel dev` or the deployed site.
 
 Depends on Phase 4 (phases). This is the monetization feature for the pitch.
 
