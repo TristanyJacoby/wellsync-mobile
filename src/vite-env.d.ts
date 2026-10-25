@@ -11,6 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_GOOGLE_WEB_CLIENT_ID?: string;
   /** Where the installed app finds the /api functions. Optional; defaults to the Vercel site. */
   readonly VITE_API_BASE_URL?: string;
+  /** Where the website's "Download WellSync" button points. Optional; defaults to /WellSync.apk. */
+  readonly VITE_APK_URL?: string;
 }
 
 interface ImportMeta {

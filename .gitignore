@@ -7,3 +7,4 @@ ios/
 .env
 .env.local
 *.apk
+!public/WellSync.apk

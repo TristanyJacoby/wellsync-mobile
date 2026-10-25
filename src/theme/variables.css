@@ -3976,19 +3976,26 @@ ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
   margin-bottom: 16px;
 }
 
-/* The three status chips share the row equally, with no empty gutter. */
+/* The three status chips fill the row with the same padding inside each one: every chip gets the
+   same extra width on top of its own text, so "In Progress" comes out wider than the other two. */
 .ws-chip-row--equal {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
   gap: 8px;
   overflow: visible;
 }
 
 .ws-chip-row--equal .ws-count-chip {
+  flex: 1 1 auto;
   justify-content: center;
   gap: 6px;
-  padding: 8px 6px;
   min-width: 0;
+  padding: 8px 10px;
+}
+
+.ws-chip-row--equal .ws-count-chip__num {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 /* More options: breathing room between each field and its input. */
@@ -4141,4 +4148,39 @@ ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
     animation: none;
     opacity: 1;
   }
+}
+
+/* ---------- Sign-up: download the Android app (web only) ---------- */
+
+.ws-download {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ws-glass-border);
+  text-align: center;
+}
+
+.ws-download__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--ws-radius-pill);
+  border: 1.5px solid var(--ws-amber-strong);
+  background: var(--ws-amber-dim);
+  color: var(--ws-ink);
+  font-family: var(--ion-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ws-download__btn ion-icon {
+  font-size: 18px;
+  color: var(--ws-amber-strong);
 }

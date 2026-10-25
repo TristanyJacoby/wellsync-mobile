@@ -1,4 +1,5 @@
-import { IonContent, IonPage, IonInput } from '@ionic/react';
+import { IonContent, IonPage, IonInput, IonIcon } from '@ionic/react';
+import { downloadOutline } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
 import { useState } from 'react';
 import {
@@ -26,6 +27,11 @@ function friendlyError(error: unknown): string {
   const code = (error as AuthError)?.code;
   return (code && ERROR_MESSAGES[code]) || 'Something went wrong. Please try again.';
 }
+
+// The Android app's APK. It lives with the website (public/WellSync.apk) unless VITE_APK_URL says otherwise.
+const APK_URL = import.meta.env.VITE_APK_URL || '/WellSync.apk';
+// An APK installs on Android only, so iPhone and iPad visitors don't get the offer.
+const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 export default function Auth() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -128,6 +134,16 @@ export default function Auth() {
             <button className="ws-button-google" style={{ marginTop: 10 }} disabled={submitting} onClick={handleGoogle}>
               Continue with Google
             </button>
+          )}
+
+          {/* Web only (the installed app has nothing to download) and only while signing up. */}
+          {mode === 'signup' && !Capacitor.isNativePlatform() && !isIos && (
+            <div className="ws-download">
+              <a className="ws-download__btn" href={APK_URL} download>
+                <IonIcon icon={downloadOutline} /> Download WellSync for Android
+              </a>
+              <p className="ws-field-hint">Prefer the app? Install it on your Android phone. You may need to allow installs from this source.</p>
+            </div>
           )}
 
           <p style={{ textAlign: 'center', marginTop: 22, fontSize: 14, color: 'var(--ws-ink-muted)' }}>
