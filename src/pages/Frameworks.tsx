@@ -8,26 +8,29 @@ import {
   informationCircleOutline,
   closeOutline,
 } from 'ionicons/icons';
-import { getTasks } from '../services/storage';
+import { getTasks, getProfile, updateTask } from '../services/storage';
+import { KanbanView, FrogView, OneThreeFiveView, IvyLeeView, MoscowView } from '../components/FrameworkViews';
 import AddTask from './AddTask';
-import type { Quadrant, Task } from '../types';
+import type { PriorityLens, Quadrant, Task } from '../types';
 
 interface FrameworkMeta {
-  id: 'eisenhower';
+  id: 'eisenhower' | 'kanban' | 'frog' | 'one-three-five' | 'ivy-lee' | 'moscow';
   label: string;
+  /** Heading of the info modal. */
+  title: string;
   description: string;
   howTo: string[];
   benefits: string[];
 }
 
-// Only Eisenhower exists today, but this shape (id, label, description,
-// howTo, benefits) is what future frameworks (MoSCoW, Pareto, ...) will
-// slot into as additional entries - the segment row and info modal both
-// already read from this list rather than anything Eisenhower-specific.
+// Each framework is an entry here (the segment row and info modal read from
+// this list) plus a view that sorts the user's existing tasks - see
+// utils/frameworks.ts and components/FrameworkViews.tsx.
 const FRAMEWORKS: FrameworkMeta[] = [
   {
     id: 'eisenhower',
     label: 'Eisenhower',
+    title: 'Eisenhower Matrix',
     description:
       "The Eisenhower Matrix sorts your tasks into four quadrants by urgency and importance, so you always know what deserves your attention first instead of just working through a flat list top to bottom.",
     howTo: [
@@ -39,6 +42,91 @@ const FRAMEWORKS: FrameworkMeta[] = [
       'Cuts decision fatigue — no more staring at a flat list wondering what’s next.',
       'Surfaces busywork you can delegate or drop instead of it quietly eating your day.',
       'Keeps important-but-not-urgent work visible before it turns into a crisis.',
+    ],
+  },
+  {
+    id: 'kanban',
+    label: 'Kanban',
+    title: 'Kanban Board',
+    description:
+      'Kanban shows all your work as columns by stage, so you can see at a glance what is waiting, what you are doing and what is finished. Seeing it all at once keeps you from starting too many things at the same time.',
+    howTo: [
+      'Every task sits in the column that matches its status.',
+      'Tap the arrows on a card to move it back or forward.',
+      'Tap a card to open and edit it.',
+    ],
+    benefits: [
+      'Makes it obvious when too much is In Progress at once.',
+      'Shows what you are waiting on, so nothing gets forgotten.',
+      'Moving a card right feels like real progress.',
+    ],
+  },
+  {
+    id: 'frog',
+    label: 'Eat the Frog',
+    title: 'Eat the Frog',
+    description:
+      "Brian Tracy's idea: if you eat a live frog first thing, the rest of the day can only get better. WellSync picks your hardest important task and puts it at the top so you do it before anything else.",
+    howTo: [
+      'WellSync picks the highest-priority task with the most work, due soonest.',
+      'Do that one first, before email, chats or easier tasks.',
+      'The rest of your tasks follow below in ranked order.',
+    ],
+    benefits: [
+      'Beats procrastination by removing the choice of what to start with.',
+      'Gets the task you are most likely to avoid done while your energy is highest.',
+      'Gives you a win early in the day.',
+    ],
+  },
+  {
+    id: 'one-three-five',
+    label: '1-3-5',
+    title: '1-3-5 Rule',
+    description:
+      'A realistic plan for one day: one big task, three medium ones and five small ones. Capping the day at nine tasks keeps your plan honest instead of a wish list.',
+    howTo: [
+      'Tasks are sized by their estimated effort: under a day is small, 1 to 2 days is medium, 2 or more is big.',
+      'WellSync fills each group with your best-ranked tasks.',
+      'If a group is full, extra tasks drop into the next smaller one. Open slots mean you have room.',
+    ],
+    benefits: [
+      'Stops you from over-planning a day you cannot finish.',
+      'Makes sure a big task is not buried under small ones.',
+      'Small tasks give quick wins around the big one.',
+    ],
+  },
+  {
+    id: 'ivy-lee',
+    label: 'Ivy Lee',
+    title: 'Ivy Lee Method',
+    description:
+      'Over a century old and still simple: choose six tasks, rank them, and work through them in order, one at a time. Whatever you do not finish moves to tomorrow. It is best done as an evening plan for the next day.',
+    howTo: [
+      'WellSync lists your six highest-ranked open tasks in order.',
+      'Start at number 1 and do not move on until it is done.',
+      'Unfinished tasks stay in the list and roll into tomorrow automatically.',
+    ],
+    benefits: [
+      'No deciding what to do next, just follow the list.',
+      'Single-tasking beats jumping between things.',
+      'A short list you can actually finish.',
+    ],
+  },
+  {
+    id: 'moscow',
+    label: 'MoSCoW',
+    title: 'MoSCoW Method',
+    description:
+      "MoSCoW sorts work into Must, Should, Could and Won't (this time). It is made for scoping a project or a crowded week by being clear about what really has to happen.",
+    howTo: [
+      'High-priority work due within a week, and overdue work, is a Must.',
+      'Important work with more time, or medium work due soon, is a Should.',
+      'Lower-priority work falls into Could and Won’t until its deadline gets closer.',
+    ],
+    benefits: [
+      'Gives you permission to say not now.',
+      'Protects the must-dos when time runs short.',
+      'Easy to explain to a teammate or teacher.',
     ],
   },
 ];
@@ -98,6 +186,7 @@ export default function Frameworks() {
   const [framework, setFramework] = useState<FrameworkMeta['id']>('eisenhower');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [lens, setLens] = useState<PriorityLens | undefined>();
   const [expandedQuadrants, setExpandedQuadrants] = useState<Set<Quadrant>>(new Set());
 
   useIonViewWillEnter(() => {
@@ -108,6 +197,19 @@ export default function Frameworks() {
     getTasks()
       .then(setTasks)
       .catch((err) => console.error('Failed to load tasks', err));
+    getProfile()
+      .then((p) => setLens(p?.priorityLens))
+      .catch((err) => console.error('Failed to load profile', err));
+  }
+
+  async function moveTask(updated: Task) {
+    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    try {
+      await updateTask(updated);
+    } catch (err) {
+      console.error('Failed to move task', err);
+      refresh();
+    }
   }
 
   // Active (non-done) tasks only - a finished task no longer needs a
@@ -159,7 +261,7 @@ export default function Frameworks() {
           </div>
           <button
             className="ws-round-btn"
-            aria-label={`About the ${activeFramework.label} framework`}
+            aria-label={`About ${activeFramework.title}`}
             onClick={() => setShowInfo(true)}
           >
             <IonIcon icon={informationCircleOutline} style={{ fontSize: 20 }} />
@@ -207,6 +309,12 @@ export default function Frameworks() {
             })}
           </div>
         )}
+
+        {framework === 'kanban' && <KanbanView tasks={tasks} onOpen={setEditingTask} onMove={moveTask} />}
+        {framework === 'frog' && <FrogView tasks={tasks} lens={lens} onOpen={setEditingTask} />}
+        {framework === 'one-three-five' && <OneThreeFiveView tasks={tasks} lens={lens} onOpen={setEditingTask} />}
+        {framework === 'ivy-lee' && <IvyLeeView tasks={tasks} lens={lens} onOpen={setEditingTask} />}
+        {framework === 'moscow' && <MoscowView tasks={tasks} onOpen={setEditingTask} />}
       </IonContent>
 
       <IonModal isOpen={!!editingTask} onDidDismiss={() => setEditingTask(null)}>
@@ -224,7 +332,7 @@ export default function Frameworks() {
       <IonModal isOpen={showInfo} onDidDismiss={() => setShowInfo(false)} initialBreakpoint={0.75} breakpoints={[0, 0.75, 1]}>
         <IonContent className="ion-padding">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 6 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 800 }}>{activeFramework.label} Matrix</h2>
+            <h2 style={{ fontSize: 17, fontWeight: 800 }}>{activeFramework.title}</h2>
             <button className="ws-icon-btn" aria-label="Close" onClick={() => setShowInfo(false)}>
               <IonIcon icon={closeOutline} style={{ fontSize: 20 }} />
             </button>
