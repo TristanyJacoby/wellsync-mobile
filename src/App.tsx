@@ -34,6 +34,7 @@ import { PlanProvider } from './contexts/PlanContext';
 import { AvatarProvider } from './contexts/AvatarContext';
 import CreateMenu from './components/CreateMenu';
 import { useTabClickGuard } from './hooks/useTabClickGuard';
+import SplashScreen from './components/SplashScreen';
 import { auth } from './services/firebase';
 import { getProfile } from './services/storage';
 
@@ -182,6 +183,7 @@ export default function App() {
           <AvatarProvider>
             <ThemeProvider>
               <AppShell />
+              <SplashScreen />
             </ThemeProvider>
           </AvatarProvider>
         </PlanProvider>

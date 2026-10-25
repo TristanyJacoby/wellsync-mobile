@@ -6,9 +6,11 @@ import {
   sendEmailVerification,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithCredential,
   AuthError,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../services/firebase';
+import { nativeGoogleCredential, nativeGoogleReady } from '../services/googleNative';
 
 const ERROR_MESSAGES: Record<string, string> = {
   'auth/invalid-email': 'That email address looks invalid.',
@@ -61,7 +63,8 @@ export default function Auth() {
     setError('');
     setSubmitting(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      if (Capacitor.isNativePlatform()) await signInWithCredential(auth, await nativeGoogleCredential());
+      else await signInWithPopup(auth, googleProvider);
     } catch (err) {
       setError(friendlyError(err));
     } finally {
@@ -112,8 +115,8 @@ export default function Auth() {
             {mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
 
-          {Capacitor.isNativePlatform() ? (
-            // Google's sign-in is a browser popup, which Android's WebView can't show.
+          {Capacitor.isNativePlatform() && !nativeGoogleReady ? (
+            // Without the Web client ID the app can't offer Google's own account picker (see googleNative.ts).
             <p className="ws-field-hint" style={{ marginTop: 14, textAlign: 'center' }}>
               Signed up with Google? Open the website, go to Profile &rarr; Edit profile &rarr; Set a password, then sign in
               here with your email and that password.

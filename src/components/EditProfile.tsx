@@ -15,6 +15,7 @@ import { saveProfile } from '../services/storage';
 import { useAuth } from '../contexts/AuthContext';
 import { useAvatar } from '../contexts/AvatarContext';
 import { fileToAvatarDataUrl } from '../utils/image';
+import { nativeGoogleCredential, nativeGoogleReady } from '../services/googleNative';
 import Avatar from './Avatar';
 import type { OnboardingProfile } from '../types';
 
@@ -131,11 +132,12 @@ export default function EditProfile({
         setPwMsg({ ok: true, text: 'Password updated.' });
       } else {
         // Google-only account: confirm it is really them, then add an email + password login.
-        if (Capacitor.isNativePlatform()) {
+        if (Capacitor.isNativePlatform() && !nativeGoogleReady) {
           setPwMsg({ ok: false, text: 'Setting a password needs a browser. Open the WellSync website, sign in with Google and do it there.' });
           return;
         }
-        await reauthenticateWithPopup(u, googleProvider);
+        if (Capacitor.isNativePlatform()) await reauthenticateWithCredential(u, await nativeGoogleCredential());
+        else await reauthenticateWithPopup(u, googleProvider);
         await linkWithCredential(u, EmailAuthProvider.credential(u.email, next));
         await u.reload();
         setHasPassword(true);

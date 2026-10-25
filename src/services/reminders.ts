@@ -29,7 +29,16 @@ export async function getReminderPermission(): Promise<ReminderPermission> {
 export async function requestReminderPermission(): Promise<ReminderPermission> {
   if (isNative) {
     const { display } = await LocalNotifications.requestPermissions();
-    return display === 'granted' ? 'granted' : 'denied';
+    if (display !== 'granted') return 'denied';
+    // Android 12+: reminders fire on time only with "Alarms & reminders" allowed for the app, a
+    // special setting the system keeps off by default. Open it once, from this button tap.
+    try {
+      const { exact_alarm } = await LocalNotifications.checkExactNotificationSetting();
+      if (exact_alarm && exact_alarm !== 'granted') await LocalNotifications.changeExactNotificationSetting();
+    } catch {
+      // iOS and older Android have no such setting.
+    }
+    return 'granted';
   }
   if (!('Notification' in window)) return 'unsupported';
   return Notification.requestPermission();
@@ -51,7 +60,8 @@ export async function syncReminders(tasks: Task[], style?: ReminderStyle): Promi
         id: notificationId(t.id),
         title: t.title,
         body: t.dueTime ? `Due ${t.dueDate} at ${t.dueTime}` : `Due ${t.dueDate}`,
-        schedule: { at },
+        // Fire even while the phone is dozing (idle), on time if exact alarms are allowed.
+        schedule: { at, allowWhileIdle: true },
       },
     ];
   });
@@ -64,7 +74,7 @@ export async function notifyNow(title: string, body: string): Promise<void> {
     if (isNative) {
       if ((await LocalNotifications.checkPermissions()).display !== 'granted') return;
       await LocalNotifications.schedule({
-        notifications: [{ id: Date.now() % 2_000_000_000, title, body, schedule: { at: new Date(Date.now() + 250) } }],
+        notifications: [{ id: Date.now() % 2_000_000_000, title, body, schedule: { at: new Date(Date.now() + 250), allowWhileIdle: true } }],
       });
     } else if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(title, { body });
