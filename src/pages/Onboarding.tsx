@@ -67,7 +67,9 @@ export default function Onboarding({
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const step = STEPS[stepIndex];
+  // Editing from Profile skips the name step: renaming lives next to the name there.
+  const steps = isEditing ? STEPS.filter((st) => st !== 'name') : STEPS;
+  const step = steps[stepIndex];
 
   const canAdvance =
     (step === 'name' && name.trim().length > 0) ||
@@ -82,7 +84,7 @@ export default function Onboarding({
     }
     setError('');
 
-    if (stepIndex < STEPS.length - 1) {
+    if (stepIndex < steps.length - 1) {
       setStepIndex(stepIndex + 1);
       return;
     }
@@ -110,7 +112,7 @@ export default function Onboarding({
             </div>
           )}
           <div style={{ display: 'flex', gap: 6, marginBottom: 30 }} aria-hidden="true">
-            {STEPS.map((_, i) => (
+            {steps.map((_, i) => (
               <div key={i} className={`ws-progress-track${i <= stepIndex ? ' is-filled' : ''}`} />
             ))}
           </div>

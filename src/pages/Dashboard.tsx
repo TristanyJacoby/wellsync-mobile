@@ -4,6 +4,8 @@ import { format } from 'date-fns';
 import { useHistory } from 'react-router-dom';
 import {
   notificationsOutline,
+  flameOutline,
+  checkmarkCircleOutline,
   chevronDownOutline,
   chevronUpOutline,
   checkmarkOutline,
@@ -21,6 +23,8 @@ import { getScheduleRecommendations, isInReminderWindow, type ScoredTask } from 
 import { priorityPillStyle, statusPillStyle, toggleDone, cycleStatus, stopping } from '../utils/board';
 import { useUndoToast } from '../hooks/useUndoToast';
 import { useAuth } from '../contexts/AuthContext';
+import { useAvatar } from '../contexts/AvatarContext';
+import { greetingFor, homeMessage } from '../utils/home';
 import Avatar from '../components/Avatar';
 import ProgressRing from '../components/ProgressRing';
 import TaskProgressBar from '../components/TaskProgressBar';
@@ -66,6 +70,15 @@ export default function Dashboard() {
     if (pomodoro.sessionsSaved > 0) getTasks().then(setTasks);
   }, [pomodoro.sessionsSaved]);
   const { user } = useAuth();
+  const { avatarUrl } = useAvatar();
+  // Re-read the clock every minute so the greeting follows the time of day.
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  const greeting = greetingFor(now);
+  const message = useMemo(() => homeMessage(tasks, now), [tasks, now]);
   const history = useHistory();
 
   // Ionic keeps each tab's page mounted in the background instead of
@@ -81,6 +94,7 @@ export default function Dashboard() {
   useTasksChanged(refresh);
 
   function refresh() {
+    setNow(new Date());
     getTasks().then(setTasks);
     getProfile().then(setProfile);
     getSeenNotifications().then(setSeen);
@@ -280,9 +294,9 @@ export default function Dashboard() {
       <IonContent fullscreen className="ion-padding ws-has-fab">
         <div className="ws-header">
           <div className="ws-header__identity">
-            <Avatar name={profile?.name ?? user?.email ?? ''} photoURL={user?.photoURL} />
+            <Avatar name={profile?.name ?? user?.email ?? ''} photoURL={avatarUrl} />
             <div className="ws-header__greeting">
-              <p>Good Morning</p>
+              <p>{greeting}</p>
               <h2>{profile?.name || 'there'}</h2>
             </div>
           </div>
@@ -298,7 +312,25 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <h1 className="ws-headline">Let&apos;s Make Today Productive</h1>
+        {/* Re-keyed on the text, so each new message eases in slowly. */}
+        <div className="ws-message" key={message.headline}>
+          <h1 className="ws-headline ws-headline--message">{message.headline}</h1>
+          {message.sub && <p className="ws-message__sub">{message.sub}</p>}
+          {(message.streak >= 2 || message.doneToday > 0) && (
+            <div className="ws-message__chips">
+              {message.streak >= 2 && (
+                <span className="ws-pill ws-pill--streak">
+                  <IonIcon icon={flameOutline} /> {message.streak}-day streak
+                </span>
+              )}
+              {message.doneToday > 0 && (
+                <span className="ws-pill" style={{ background: 'var(--ws-done-bg)', color: 'var(--ws-done-text)' }}>
+                  <IonIcon icon={checkmarkCircleOutline} /> {message.doneToday} done today
+                </span>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="ws-stat-card">
           <ProgressRing percent={percent} />

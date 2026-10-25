@@ -1,18 +1,21 @@
 import { IonContent, IonPage, IonIcon, IonModal, useIonViewWillEnter } from '@ionic/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   flashOutline,
   calendarClearOutline,
   arrowRedoOutline,
   trashBinOutline,
   informationCircleOutline,
+  lockClosedOutline,
   closeOutline,
 } from 'ionicons/icons';
 import { getTasks, getProfile, updateTask } from '../services/storage';
 import { useTasksChanged } from '../contexts/TaskChangeContext';
+import { usePlan } from '../contexts/PlanContext';
+import { rankFrameworks, FREE_FRAMEWORK_COUNT } from '../utils/frameworks';
 import { KanbanView, FrogView, OneThreeFiveView, IvyLeeView, MoscowView } from '../components/FrameworkViews';
 import AddTask from './AddTask';
-import type { PriorityLens, Quadrant, Task } from '../types';
+import type { OnboardingProfile, PriorityLens, Quadrant, Task } from '../types';
 
 interface FrameworkMeta {
   id: 'eisenhower' | 'kanban' | 'frog' | 'one-three-five' | 'ivy-lee' | 'moscow';
@@ -187,7 +190,9 @@ export default function Frameworks() {
   const [framework, setFramework] = useState<FrameworkMeta['id']>('eisenhower');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showInfo, setShowInfo] = useState(false);
-  const [lens, setLens] = useState<PriorityLens | undefined>();
+  const [profile, setProfile] = useState<OnboardingProfile | null>(null);
+  const lens: PriorityLens | undefined = profile?.priorityLens;
+  const { isPlus, plan, showPremium } = usePlan();
   const [expandedQuadrants, setExpandedQuadrants] = useState<Set<Quadrant>>(new Set());
 
   useIonViewWillEnter(() => {
@@ -202,7 +207,7 @@ export default function Frameworks() {
       .then(setTasks)
       .catch((err) => console.error('Failed to load tasks', err));
     getProfile()
-      .then((p) => setLens(p?.priorityLens))
+      .then(setProfile)
       .catch((err) => console.error('Failed to load profile', err));
   }
 
@@ -237,6 +242,29 @@ export default function Frameworks() {
     });
   }
 
+  // Free accounts get the three frameworks that fit their quiz answers; Plus gets all six.
+  const ranked = useMemo(() => rankFrameworks(profile), [profile]);
+  const freeIds = ranked.slice(0, FREE_FRAMEWORK_COUNT);
+  const isUnlocked = (id: FrameworkMeta['id']) => isPlus || freeIds.includes(id);
+  const orderedFrameworks = useMemo(
+    () => [...FRAMEWORKS].sort((a, b) => ranked.indexOf(a.id) - ranked.indexOf(b.id)),
+    [ranked]
+  );
+
+  // A locked framework can't stay selected (first load, or a lapsed plan).
+  useEffect(() => {
+    if (plan !== null && !isUnlocked(framework)) setFramework(freeIds[0]);
+  }, [plan, profile, framework]);
+
+  function pickFramework(f: FrameworkMeta) {
+    if (isUnlocked(f.id)) {
+      setFramework(f.id);
+      return;
+    }
+    const mine = freeIds.map((id) => FRAMEWORKS.find((x) => x.id === id)!.label).join(', ');
+    showPremium(`${f.title} is part of WellSync Plus. Your free plan includes the three frameworks that fit how you work: ${mine}.`);
+  }
+
   const activeFramework = FRAMEWORKS.find((f) => f.id === framework)!;
 
   return (
@@ -251,17 +279,21 @@ export default function Frameworks() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
           <div className="ws-chip-row" role="tablist" aria-label="Prioritization framework" style={{ flex: 1 }}>
-            {FRAMEWORKS.map((f) => (
-              <button
-                key={f.id}
-                role="tab"
-                aria-selected={framework === f.id}
-                className={`ws-filter-chip${framework === f.id ? ' is-active' : ''}`}
-                onClick={() => setFramework(f.id)}
-              >
-                {f.label}
-              </button>
-            ))}
+            {orderedFrameworks.map((f) => {
+              const locked = !isUnlocked(f.id);
+              return (
+                <button
+                  key={f.id}
+                  role="tab"
+                  aria-selected={framework === f.id}
+                  className={`ws-filter-chip${framework === f.id ? ' is-active' : ''}${locked ? ' is-locked' : ''}`}
+                  onClick={() => pickFramework(f)}
+                >
+                  {locked && <IonIcon icon={lockClosedOutline} style={{ fontSize: 13, marginRight: 5 }} />}
+                  {f.label}
+                </button>
+              );
+            })}
           </div>
           <button
             className="ws-round-btn"
@@ -271,6 +303,12 @@ export default function Frameworks() {
             <IonIcon icon={informationCircleOutline} style={{ fontSize: 20 }} />
           </button>
         </div>
+
+        {!isUnlocked(framework) ? null : !isPlus && plan !== null && (
+          <p className="ws-fw-hint" style={{ marginTop: -6, marginBottom: 14 }}>
+            <IonIcon icon={lockClosedOutline} style={{ fontSize: 11, verticalAlign: -1 }} /> Your free frameworks are picked from your quiz answers. Plus unlocks all six.
+          </p>
+        )}
 
         {framework === 'eisenhower' && (
           <div className="ws-matrix-grid">

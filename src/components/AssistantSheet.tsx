@@ -2,10 +2,10 @@ import { IonContent, IonFooter, IonHeader, IonIcon, IonModal, IonToolbar } from 
 import { useEffect, useRef, useState } from 'react';
 import { addOutline, checkmarkOutline, closeOutline, sendOutline } from 'ionicons/icons';
 import { format } from 'date-fns';
-import { addTask, getCategories, getPlan, getProjects } from '../services/storage';
+import { addTask, getCategories, getProjects } from '../services/storage';
+import { usePlan } from '../contexts/PlanContext';
 import {
   askAssistant,
-  setPlan,
   AssistantError,
   type AskQuestion,
   type AssistantContext,
@@ -14,7 +14,7 @@ import {
 } from '../services/assistant';
 import { assignQuadrant } from '../utils/scheduler';
 import WellBotIcon from './WellBotIcon';
-import type { CategoryDef, Plan, Priority, Project, Task } from '../types';
+import type { CategoryDef, Priority, Project, Task } from '../types';
 
 /** What the user has picked / typed for one question. */
 interface Answer {
@@ -54,7 +54,7 @@ export default function AssistantSheet({
   onClose: () => void;
   onCreated?: () => void;
 }) {
-  const [plan, setPlanState] = useState<Plan | null>(null);
+  const { plan, subscribe } = usePlan();
   const [categories, setCategories] = useState<CategoryDef[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -69,8 +69,6 @@ export default function AssistantSheet({
     setTurns([]);
     setInput('');
     setError('');
-    setPlanState(null);
-    getPlan().then(setPlanState).catch(() => setPlanState('free'));
     getCategories().then(setCategories).catch(() => undefined);
     getProjects().then(setProjects).catch(() => undefined);
   }, [isOpen]);
@@ -117,7 +115,6 @@ export default function AssistantSheet({
       ]);
     } catch (err) {
       const code = err instanceof AssistantError ? err.code : 'failed';
-      if (code === 'plus_required') setPlanState('free');
       setError(ERROR_TEXT[code] ?? 'Something went wrong. Try again.');
     } finally {
       setBusy(false);
@@ -161,11 +158,11 @@ export default function AssistantSheet({
     send(text, turns.map((x, i) => (i === turnIndex && x.from === 'ask' ? { ...x, submitted: true } : x)));
   }
 
-  async function changePlan(action: 'subscribe' | 'cancel') {
+  async function changePlan() {
     setBusy(true);
     setError('');
     try {
-      setPlanState(await setPlan(action));
+      await subscribe();
     } catch (err) {
       setError(ERROR_TEXT[err instanceof AssistantError ? err.code : ''] ?? 'Could not update your plan. Try again.');
     } finally {
@@ -241,7 +238,7 @@ export default function AssistantSheet({
               <li>WellBot asks a few quick questions when it needs more.</li>
               <li>Every task comes with suggested phases to tick off.</li>
             </ul>
-            <button className="ws-button-block" disabled={busy} onClick={() => changePlan('subscribe')}>
+            <button className="ws-button-block" disabled={busy} onClick={changePlan}>
               {busy ? 'Subscribing…' : 'Subscribe'}
             </button>
             {error && <p className="ws-error">{error}</p>}

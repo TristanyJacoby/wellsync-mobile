@@ -1,22 +1,20 @@
 import { IonContent, IonPage, IonModal, IonIcon, useIonViewWillEnter } from '@ionic/react';
 import { useEffect, useRef, useState } from 'react';
 import { signOut } from 'firebase/auth';
-import { pencilOutline, clipboardOutline, checkmarkDoneOutline, hourglassOutline, statsChartOutline } from 'ionicons/icons';
+import { pencilOutline, clipboardOutline, checkmarkDoneOutline, hourglassOutline, statsChartOutline, lockClosedOutline, personCircleOutline, chevronForwardOutline } from 'ionicons/icons';
 import { auth } from '../services/firebase';
-import { getProfile, getTasks, getPlan } from '../services/storage';
+import { getProfile, getTasks } from '../services/storage';
+import { usePlan } from '../contexts/PlanContext';
 import { useTasksChanged } from '../contexts/TaskChangeContext';
-import { setPlan } from '../services/assistant';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useAvatar } from '../contexts/AvatarContext';
+import { personaFor } from '../utils/persona';
 import Avatar from '../components/Avatar';
 import StatCard from '../components/StatCard';
+import EditProfile from '../components/EditProfile';
+import ThemePicker from '../components/ThemePicker';
 import Onboarding from './Onboarding';
-import type { OnboardingProfile, Plan, Task, Theme } from '../types';
-
-const THEME_OPTIONS: { id: Theme; label: string; swatch: string }[] = [
-  { id: 'dark', label: 'Dark', swatch: 'linear-gradient(135deg, #16212e 0%, #1f2f45 50%, #28405e 100%)' },
-  { id: 'light', label: 'Light', swatch: 'linear-gradient(135deg, #fce9d8 0%, #f6dce3 45%, #e3d6f2 100%)' },
-];
+import type { OnboardingProfile, Task } from '../types';
 
 const WORK_STYLE_LABEL: Record<string, string> = {
   planner: 'Plans ahead of time',
@@ -40,10 +38,11 @@ export default function Profile() {
   const [profile, setProfile] = useState<OnboardingProfile | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingPreferences, setEditingPreferences] = useState(false);
-  const [plan, setPlanState] = useState<Plan>('free');
+  const { plan, isPlus, subscribe, cancel, showPremium } = usePlan();
+  const { avatarUrl } = useAvatar();
+  const [editingProfile, setEditingProfile] = useState(false);
   const [planBusy, setPlanBusy] = useState(false);
   const { user } = useAuth();
-  const { theme, setTheme } = useTheme();
 
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
@@ -88,13 +87,12 @@ export default function Profile() {
   function refresh() {
     getProfile().then(setProfile);
     getTasks().then(setTasks);
-    getPlan().then(setPlanState).catch(() => undefined);
   }
 
   async function changePlan(action: 'subscribe' | 'cancel') {
     setPlanBusy(true);
     try {
-      setPlanState(await setPlan(action));
+      await (action === 'subscribe' ? subscribe() : cancel());
     } catch (err) {
       console.error('Failed to change plan', err);
     } finally {
@@ -106,14 +104,28 @@ export default function Profile() {
   const completed = tasks.filter((t) => t.status === 'done').length;
   const pending = total - completed;
   const completionRate = total ? (completed / total) * 100 : 0;
+  const persona = personaFor(profile);
 
   return (
     <IonPage>
       <IonContent fullscreen className="ion-padding ws-has-fab">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 12, marginBottom: 24 }}>
-          <Avatar name={profile?.name ?? user?.email ?? ''} photoURL={user?.photoURL} size={84} />
-          <h2 style={{ fontSize: 20, fontWeight: 800, marginTop: 14 }}>{profile?.name ?? 'Your profile'}</h2>
+          <button type="button" className="ws-avatar-btn" aria-label="Edit profile photo" onClick={() => setEditingProfile(true)}>
+            <Avatar name={profile?.name ?? user?.email ?? ''} photoURL={avatarUrl} size={84} />
+          </button>
+          <div className="ws-profile-name">
+            <h2>{profile?.name ?? 'Your profile'}</h2>
+            <button type="button" className="ws-round-btn" aria-label="Edit name" onClick={() => setEditingProfile(true)}>
+              <IonIcon icon={pencilOutline} style={{ fontSize: 14 }} />
+            </button>
+          </div>
           <p style={{ fontSize: 13, color: 'var(--ws-ink-muted)', marginTop: 2 }}>{user?.email}</p>
+          {persona && (
+            <div className="ws-glass-card ws-persona">
+              <span className="ws-persona__title">{persona.title}</span>
+              <p>{persona.description}</p>
+            </div>
+          )}
         </div>
 
         <div className="ws-stat-carousel" ref={carouselRef}>
@@ -161,10 +173,20 @@ export default function Profile() {
 
         <div className="ws-section-header">
           <h3>Preferences</h3>
-          <button className="ws-section-header__link" onClick={() => setEditingPreferences(true)}>
-            <IonIcon icon={pencilOutline} style={{ fontSize: 13, marginRight: 4 }} />
-            Edit
-          </button>
+          {isPlus ? (
+            <button className="ws-section-header__link" onClick={() => setEditingPreferences(true)}>
+              <IonIcon icon={pencilOutline} style={{ fontSize: 13, marginRight: 4 }} />
+              Edit
+            </button>
+          ) : (
+            <button
+              className="ws-section-header__link"
+              onClick={() => showPremium('Changing your preferences is part of WellSync Plus. It changes which frameworks fit you, so the free plan keeps them fixed.')}
+            >
+              <IonIcon icon={lockClosedOutline} style={{ fontSize: 13, marginRight: 4 }} />
+              Plus
+            </button>
+          )}
         </div>
 
         <div className="ws-glass-card" style={{ padding: '4px 18px', marginTop: 10 }}>
@@ -201,36 +223,43 @@ export default function Profile() {
             <button
               className="ws-section-header__link"
               disabled={planBusy}
-              onClick={() => changePlan(plan === 'plus' ? 'cancel' : 'subscribe')}
+              onClick={() => (plan === 'plus' ? changePlan('cancel') : showPremium())}
             >
-              {plan === 'plus' ? 'Cancel (demo)' : 'Try Plus (demo)'}
+              {plan === 'plus' ? 'Cancel (demo)' : 'See Plus'}
             </button>
           </div>
         </div>
 
         <div className="ws-section-header" style={{ marginTop: 24 }}>
-          <h3>Appearance</h3>
+          <h3>Settings</h3>
         </div>
 
-        <div className="ws-theme-row">
-          {THEME_OPTIONS.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              className={`ws-theme-option${theme === opt.id ? ' is-selected' : ''}`}
-              onClick={() => setTheme(opt.id)}
-              aria-pressed={theme === opt.id}
-            >
-              <span className="ws-theme-option__swatch" style={{ background: opt.swatch }} />
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <button type="button" className="ws-glass-card ws-settings-row" onClick={() => setEditingProfile(true)}>
+          <IonIcon icon={personCircleOutline} />
+          <span>
+            <strong>Edit profile</strong>
+            <small>Photo, name and password</small>
+          </span>
+          <IonIcon icon={chevronForwardOutline} className="ws-settings-row__chev" />
+        </button>
+
+        <p className="ws-field-label" style={{ marginTop: 16 }}>
+          Theme
+        </p>
+        <ThemePicker />
 
         <button className="ws-button-google" style={{ marginTop: 24 }} onClick={() => signOut(auth)}>
           Sign Out
         </button>
       </IonContent>
+
+      <IonModal isOpen={editingProfile} onDidDismiss={() => setEditingProfile(false)}>
+        <EditProfile
+          profile={profile}
+          onNameSaved={(name) => setProfile((p) => (p ? { ...p, name } : p))}
+          onClose={() => setEditingProfile(false)}
+        />
+      </IonModal>
 
       <IonModal isOpen={editingPreferences} onDidDismiss={() => setEditingPreferences(false)}>
         {profile && (

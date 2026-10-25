@@ -28,6 +28,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PomodoroProvider } from './contexts/PomodoroContext';
 import { TaskChangeProvider } from './contexts/TaskChangeContext';
+import { PlanProvider } from './contexts/PlanContext';
+import { AvatarProvider } from './contexts/AvatarContext';
 import CreateMenu from './components/CreateMenu';
 import { auth } from './services/firebase';
 import { getProfile } from './services/storage';
@@ -164,9 +166,13 @@ export default function App() {
   return (
     <IonApp>
       <AuthProvider>
-        <ThemeProvider>
-          <AppShell />
-        </ThemeProvider>
+        <PlanProvider>
+          <AvatarProvider>
+            <ThemeProvider>
+              <AppShell />
+            </ThemeProvider>
+          </AvatarProvider>
+        </PlanProvider>
       </AuthProvider>
     </IonApp>
   );

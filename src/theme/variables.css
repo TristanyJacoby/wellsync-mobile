@@ -19,8 +19,8 @@
   --ws-glass-shadow-sm: 0 6px 18px rgba(94, 63, 107, 0.1);
 
   /* Dark stat card + primary CTA surface. */
-  --ws-dark: #1c1c1e;
-  --ws-dark-raised: #2a2a2d;
+  --ws-dark: #3a2f4f;
+  --ws-dark-raised: #4a3d63;
 
   /* Solid surface for pop-ups (alerts, pickers) - glass is too see-through
      over a dimmed backdrop. */
@@ -95,8 +95,8 @@
   --ws-glass-shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.25);
 
   /* Dark stat card + primary CTA surface - darker than the page ground. */
-  --ws-dark: #0d1219;
-  --ws-dark-raised: #161f2b;
+  --ws-dark: #2b4160;
+  --ws-dark-raised: #36517a;
 
   /* Solid surface for pop-ups (alerts, pickers). */
   --ws-popup-bg: #1d2b3d;
@@ -2936,6 +2936,496 @@ ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
 
 @media (prefers-reduced-motion: reduce) {
   ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
+    animation: none;
+  }
+}
+
+/* ---------- WellSync Plus pop-up: blurred screen, slow card ---------- */
+
+.ws-premium {
+  position: fixed;
+  inset: 0;
+  z-index: 20500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.ws-premium__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 12, 20, 0);
+  backdrop-filter: blur(0);
+  -webkit-backdrop-filter: blur(0);
+  transition: background 0.6s ease, backdrop-filter 0.6s ease, -webkit-backdrop-filter 0.6s ease;
+}
+
+.ws-premium.is-open .ws-premium__backdrop {
+  background: rgba(8, 12, 20, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.ws-premium__card {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 26px 22px 22px;
+  border-radius: var(--ws-radius-lg);
+  background: var(--ws-popup-bg);
+  border: 1px solid var(--ws-glass-border);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateY(28px) scale(0.92);
+  transition: opacity 0.6s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ws-premium.is-open .ws-premium__card {
+  opacity: 1;
+  transform: none;
+}
+
+.ws-premium__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+.ws-premium__badge {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: var(--ws-amber-dim);
+  color: var(--ws-amber-strong);
+}
+
+.ws-premium__card h3 {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.ws-premium__reason {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ws-ink-muted);
+}
+
+.ws-premium__perks {
+  list-style: none;
+  margin: 4px 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ws-ink);
+}
+
+.ws-premium__perks li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ws-premium__perks ion-icon,
+.ws-premium__perks svg {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--ws-amber-strong);
+}
+
+.ws-premium__card .ws-button-block {
+  margin-top: 4px;
+  background: var(--ws-amber-strong);
+  color: #1c1c1e;
+}
+
+.ws-premium__later {
+  align-self: center;
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ws-ink-muted);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-premium__backdrop,
+  .ws-premium__card {
+    transition-duration: 0.01s;
+  }
+}
+
+/* ---------- Profile: name row, persona, settings, theme picker, edit sheet ---------- */
+
+.ws-avatar-btn {
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.ws-profile-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.ws-profile-name h2 {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ws-persona {
+  margin-top: 16px;
+  width: 100%;
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.ws-persona__title {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-amber-dim);
+  color: var(--ws-amber-strong);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ws-persona p {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ws-ink-muted);
+}
+
+.ws-settings-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--ws-glass-border);
+  font: inherit;
+  text-align: left;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-settings-row > ion-icon:first-child {
+  font-size: 24px;
+  color: var(--ws-amber-strong);
+}
+
+.ws-settings-row span {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.ws-settings-row small {
+  font-size: 12px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-settings-row__chev {
+  color: var(--ws-ink-faint);
+}
+
+.ws-themepicker__current,
+.ws-themepicker__option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-themepicker__current {
+  padding: 12px 14px;
+  border: 1px solid var(--ws-glass-border);
+}
+
+.ws-themepicker__swatch {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid var(--ws-glass-border);
+}
+
+.ws-themepicker__label {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ws-themepicker__chevron {
+  color: var(--ws-ink-muted);
+  transition: transform 0.25s ease;
+}
+
+.ws-themepicker__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.ws-themepicker__list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: ws-tab-in 0.3s ease backwards;
+}
+
+.ws-themepicker__option {
+  padding: 9px 10px;
+  border: none;
+  border-radius: var(--ws-radius-sm);
+  background: none;
+}
+
+.ws-themepicker__option.is-selected {
+  background: var(--ws-amber-dim);
+}
+
+.ws-themepicker__plus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-amber-dim);
+  color: var(--ws-amber-strong);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.ws-themepicker__check {
+  color: var(--ws-amber-strong);
+}
+
+.ws-edit-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 16px;
+}
+
+.ws-edit-section h3 {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.ws-edit-photo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ws-edit-photo__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ws-edit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ws-high-text);
+  cursor: pointer;
+}
+
+.ws-button-block--sm {
+  width: auto;
+  align-self: flex-start;
+  padding: 11px 20px;
+  font-size: 14px;
+}
+
+.ws-ok {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ws-low-text);
+}
+
+.ws-filter-chip.is-locked {
+  opacity: 0.7;
+}
+
+/* ---------- Projects: layout toggle, grid tiles, task picker ---------- */
+
+.ws-projects-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ws-layout-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-glass-bg-strong);
+  border: 1px solid var(--ws-glass-border);
+}
+
+.ws-layout-toggle button {
+  width: 36px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--ws-radius-pill);
+  background: none;
+  color: var(--ws-ink-muted);
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.ws-layout-toggle button.is-active {
+  background: var(--ws-dark);
+  color: var(--ws-dark-ink);
+}
+
+.ws-project-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.ws-project-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--ws-glass-border);
+  font: inherit;
+  text-align: left;
+  color: var(--ws-ink);
+  cursor: pointer;
+  animation: ws-tab-in 0.35s ease backwards;
+}
+
+.ws-project-tile strong {
+  max-width: 100%;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.ws-project-tile__icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--ws-inprogress-bg);
+  color: var(--ws-inprogress-text);
+  font-size: 19px;
+}
+
+.ws-project-tile__meta {
+  font-size: 12px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-project-tile .ws-progress__track {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.ws-pick-row.is-picked {
+  box-shadow: var(--ws-glass-shadow);
+  border-color: var(--ws-amber-strong);
+}
+
+.ws-pick-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--ws-popup-bg) 60%, transparent);
+}
+
+/* ---------- Home: dynamic message ---------- */
+
+.ws-headline--message {
+  margin: 18px 0 8px;
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.ws-message {
+  margin-bottom: 20px;
+  animation: ws-message-in 1s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes ws-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+.ws-message__sub {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ws-ink-muted);
+}
+
+.ws-message__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ws-pill--streak {
+  background: var(--ws-medium-bg);
+  color: var(--ws-medium-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-message {
     animation: none;
   }
 }

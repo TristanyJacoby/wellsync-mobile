@@ -13,7 +13,15 @@ export type WorkStyle = 'planner' | 'deadline-driven' | 'spontaneous';
 export type PriorityLens = 'urgency' | 'importance' | 'effort';
 export type ReminderStyle = 'early' | 'last-minute' | 'self-check';
 export type TaskStatus = 'todo' | 'in-progress' | 'in-review' | 'done';
-export type Theme = 'light' | 'dark';
+export type Theme =
+  | 'light'
+  | 'dark'
+  | 'catppuccin-mocha'
+  | 'catppuccin-latte'
+  | 'nord'
+  | 'dracula'
+  | 'rose-pine'
+  | 'tokyo-night';
 export type Plan = 'free' | 'plus';
 
 export interface Task {

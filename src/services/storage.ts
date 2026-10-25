@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, increment, query, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore';
+import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, increment, query, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import type { Task, OnboardingProfile, Project, Theme, CategoryDef, Plan } from '../types';
 import { DEFAULT_CATEGORIES } from '../utils/categories';
@@ -133,4 +133,32 @@ export async function getPlan(): Promise<Plan> {
   const uid = requireUid();
   const snapshot = await getDoc(doc(db, 'users', uid));
   return snapshot.data()?.plan === 'plus' ? 'plus' : 'free';
+}
+
+// A small profile picture kept on the user doc as a data URL (about 20 KB
+// after utils/image.ts resizes it), so no paid Firebase Storage bucket is
+// needed. Top-level like `theme`, so saving the onboarding profile can't clobber it.
+export async function getPhoto(): Promise<string | null> {
+  const uid = requireUid();
+  const snapshot = await getDoc(doc(db, 'users', uid));
+  return (snapshot.data()?.photoDataUrl as string | undefined) ?? null;
+}
+
+export async function savePhoto(dataUrl: string | null): Promise<void> {
+  const uid = requireUid();
+  await setDoc(doc(db, 'users', uid), { photoDataUrl: dataUrl ?? deleteField() }, { merge: true });
+}
+
+// How the Projects tab is laid out: a top-level field on the user doc.
+export type ProjectsLayout = 'list' | 'grid';
+
+export async function getProjectsLayout(): Promise<ProjectsLayout> {
+  const uid = requireUid();
+  const snapshot = await getDoc(doc(db, 'users', uid));
+  return snapshot.data()?.projectsLayout === 'grid' ? 'grid' : 'list';
+}
+
+export async function saveProjectsLayout(layout: ProjectsLayout): Promise<void> {
+  const uid = requireUid();
+  await setDoc(doc(db, 'users', uid), { projectsLayout: layout }, { merge: true });
 }
