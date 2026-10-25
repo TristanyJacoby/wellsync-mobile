@@ -3934,3 +3934,109 @@ ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
 .ws-back-btn:active {
   transform: translateY(1px);
 }
+
+/* ---------- Spacing and shape fixes ---------- */
+
+/* Task list pop-ups: rounder rows with room between them. */
+.ws-tasklist {
+  gap: 10px;
+  padding: 2px 2px 4px;
+}
+
+.ws-tasklist__row {
+  padding: 13px 18px;
+  border-radius: 24px;
+}
+
+/* Today / Overall toggle sits level with the title. */
+.ws-stat-card__head {
+  align-items: center;
+}
+
+.ws-stat-card__head .ws-stat-card__title {
+  margin: 0;
+  line-height: 1;
+}
+
+.ws-stat-card__head {
+  margin-bottom: 16px;
+}
+
+/* The three status chips share the row equally, with no empty gutter. */
+.ws-chip-row--equal {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  overflow: visible;
+}
+
+.ws-chip-row--equal .ws-count-chip {
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 6px;
+  min-width: 0;
+}
+
+/* More options: breathing room between each field and its input. */
+.ws-form-card .ws-phase-add {
+  margin-top: 12px;
+}
+
+.ws-form-card .ws-tag-row {
+  margin-bottom: 12px;
+}
+
+.ws-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  margin-bottom: 4px;
+  padding: 0 16px;
+  border: 1px solid var(--ws-ink-faint);
+  border-radius: var(--ws-radius-md);
+  background: var(--ws-glass-bg-strong);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-select-trigger .is-placeholder {
+  color: var(--ws-ink-faint);
+}
+
+.ws-radio-row {
+  background: var(--ws-glass-bg);
+}
+
+.ws-radio-row.is-on {
+  background: var(--ws-amber-dim);
+}
+
+.ws-radio-dot {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--ws-ink-faint);
+}
+
+.ws-radio-dot.is-on {
+  border-color: var(--ws-amber-strong);
+  background: radial-gradient(circle, var(--ws-amber-strong) 45%, transparent 50%);
+}
+
+/* Rows live inside a <section>, so that is the flex container that needs the gap. */
+.ws-tasklist > section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ws-tasklist > section + section {
+  margin-top: 6px;
+}

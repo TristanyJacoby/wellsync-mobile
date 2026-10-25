@@ -426,7 +426,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        <div className="ws-chip-row" role="tablist" aria-label="Filter by status">
+        <div className="ws-chip-row ws-chip-row--equal" role="tablist" aria-label="Filter by status">
           {STATUS_FILTERS.map((f) => (
             <button
               key={f.id}

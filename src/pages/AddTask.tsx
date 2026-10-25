@@ -1,4 +1,4 @@
-import { IonContent, IonInput, IonTextarea, IonSelect, IonSelectOption, IonIcon } from '@ionic/react';
+import { IonContent, IonInput, IonTextarea, IonIcon } from '@ionic/react';
 import { useEffect, useRef, useState } from 'react';
 import {
   closeOutline,
@@ -13,6 +13,7 @@ import {
 import { addTask, updateTask, getProjects, getCategories, saveCategories, addProject, getSavedTags, saveSavedTags } from '../services/storage';
 import { DEFAULT_CATEGORIES, CATEGORY_COLORS } from '../utils/categories';
 import PhaseList from '../components/PhaseList';
+import PopupCard from '../components/PopupCard';
 import { assignQuadrant } from '../utils/scheduler';
 import AssistantSheet from '../components/AssistantSheet';
 import WellBotIcon from '../components/WellBotIcon';
@@ -51,7 +52,8 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
   const [phaseInput, setPhaseInput] = useState('');
   const [savedTags, setSavedTags] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState<string | null>(null); // null = closed
-  const [newProject, setNewProject] = useState<string | null>(null);
+  const [newProject, setNewProject] = useState('');
+  const [showProjectPicker, setShowProjectPicker] = useState(false);
   const phaseInputRef = useRef<HTMLInputElement>(null);
   const tagInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
@@ -115,7 +117,7 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
   };
 
   const createProject = async () => {
-    const name = (newProject ?? '').trim();
+    const name = newProject.trim();
     if (!name) return;
     const existing = projects.find((p) => p.name.toLowerCase() === name.toLowerCase());
     if (existing) {
@@ -126,7 +128,8 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
       setProjectId(created.id);
       addProject(created).catch((err) => console.error('Failed to save project', err));
     }
-    setNewProject(null);
+    setNewProject('');
+    setShowProjectPicker(false);
   };
 
   const isEditing = !!editTask;
@@ -351,48 +354,10 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
               )}
 
               <p className="ws-field-label">Project</p>
-              <IonSelect
-                fill="outline"
-                value={projectId}
-                placeholder={projects.length ? 'Choose a project' : 'No projects yet'}
-                interfaceOptions={{ header: 'Project' }}
-                onIonChange={(e) => setProjectId(e.detail.value)}
-              >
-                {projects.map((p) => (
-                  <IonSelectOption key={p.id} value={p.id}>
-                    {p.name}
-                  </IonSelectOption>
-                ))}
-              </IonSelect>
-              {newProject === null ? (
-                <button type="button" className="ws-draft__add" onClick={() => setNewProject('')}>
-                  <IonIcon icon={addOutline} /> New project
-                </button>
-              ) : (
-                <div className="ws-phase-add">
-                  <input
-                    className="ws-plain-input ws-plain-input--sm"
-                    type="text"
-                    autoFocus
-                    value={newProject}
-                    maxLength={40}
-                    placeholder="Project name"
-                    aria-label="New project name"
-                    onChange={(e) => setNewProject(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        createProject();
-                      }
-                      if (e.key === 'Escape') setNewProject(null);
-                    }}
-                  />
-                  <button type="button" className="ws-tag-add" onClick={createProject} disabled={!newProject.trim()}>
-                    <IonIcon icon={addOutline} style={{ fontSize: 14 }} />
-                    Create
-                  </button>
-                </div>
-              )}
+              <button type="button" className="ws-select-trigger" onClick={() => setShowProjectPicker(true)} aria-haspopup="dialog">
+                <span className={selectedProject ? '' : 'is-placeholder'}>{selectedProject?.name ?? (projects.length ? 'Choose a project' : 'No project')}</span>
+                <IonIcon icon={chevronDownOutline} />
+              </button>
 
               <p className="ws-field-label">Effort</p>
               <div className="ws-stepper" role="group" aria-label="Estimated effort in days">
@@ -476,6 +441,62 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
           {isEditing ? 'Save Changes' : 'Create Task'}
         </button>
       </IonContent>
+
+      <PopupCard open={showProjectPicker} onClose={() => setShowProjectPicker(false)} label="Project">
+        <div className="ws-tasklist__head">
+          <h3>Project</h3>
+          <button type="button" className="ws-round-btn" aria-label="Close" onClick={() => setShowProjectPicker(false)}>
+            <IonIcon icon={closeOutline} style={{ fontSize: 18 }} />
+          </button>
+        </div>
+        <div className="ws-tasklist" role="radiogroup" aria-label="Project">
+          {[{ id: undefined as string | undefined, name: 'No project' }, ...projects].map((p) => {
+            const on = projectId === p.id;
+            return (
+              <button
+                key={p.id ?? 'none'}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                className={`ws-tasklist__row ws-radio-row${on ? ' is-on' : ''}`}
+                onClick={() => {
+                  setProjectId(p.id);
+                  setShowProjectPicker(false);
+                }}
+              >
+                <span className={`ws-radio-dot${on ? ' is-on' : ''}`} aria-hidden="true" />
+                <span className="ws-tasklist__text">
+                  <strong>{p.name}</strong>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="ws-field-label" style={{ marginTop: 14 }}>
+          New project
+        </p>
+        <div className="ws-phase-add" style={{ width: '100%' }}>
+          <input
+            className="ws-plain-input ws-plain-input--sm"
+            type="text"
+            value={newProject}
+            maxLength={40}
+            placeholder="Project name"
+            aria-label="New project name"
+            onChange={(e) => setNewProject(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                createProject();
+              }
+            }}
+          />
+          <button type="button" className="ws-tag-add" onClick={createProject} disabled={!newProject.trim()}>
+            <IonIcon icon={addOutline} style={{ fontSize: 14 }} />
+            Create
+          </button>
+        </div>
+      </PopupCard>
 
       <AssistantSheet
         isOpen={showAssistant}
