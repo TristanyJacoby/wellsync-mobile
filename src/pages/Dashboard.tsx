@@ -1,11 +1,9 @@
-import { IonContent, IonPage, IonIcon, IonModal, useIonViewWillEnter } from '@ionic/react';
+import { IonContent, IonFab, IonPage, IonIcon, IonModal, useIonViewWillEnter } from '@ionic/react';
 import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { useHistory } from 'react-router-dom';
 import {
-  addOutline,
   notificationsOutline,
-  sparklesOutline,
   chevronDownOutline,
   chevronUpOutline,
   checkmarkOutline,
@@ -28,6 +26,7 @@ import TaskProgressBar from '../components/TaskProgressBar';
 import FocusPanel from '../components/FocusPanel';
 import NotificationCenter from '../components/NotificationCenter';
 import AssistantSheet from '../components/AssistantSheet';
+import HomeFab from '../components/HomeFab';
 import { usePomodoro, formatClock } from '../contexts/PomodoroContext';
 import AddTask from './AddTask';
 import type { Task, OnboardingProfile, TaskStatus } from '../types';
@@ -288,12 +287,6 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="ws-header__actions">
-            <button className="ws-icon-btn ws-icon-btn--dark" aria-label="Add task" onClick={() => setShowAddTask(true)}>
-              <IonIcon icon={addOutline} style={{ fontSize: 20 }} />
-            </button>
-            <button className="ws-icon-btn" aria-label="Task assistant" onClick={() => setShowAssistant(true)}>
-              <IonIcon icon={sparklesOutline} style={{ fontSize: 18 }} />
-            </button>
             <button
               className="ws-icon-btn ws-icon-btn--bell"
               aria-label={unread.size ? `Notifications, ${unread.size} unread` : 'Notifications'}
@@ -414,6 +407,12 @@ export default function Dashboard() {
             )}
           </>
         )}
+        {/* Keeps the last card clear of the floating button. */}
+        <div style={{ height: 80 }} />
+
+        <IonFab slot="fixed" vertical="bottom" horizontal="end" className="ws-fab-slot">
+          <HomeFab onCreateTask={() => setShowAddTask(true)} onOpenAssistant={() => setShowAssistant(true)} />
+        </IonFab>
       </IonContent>
 
       <AssistantSheet isOpen={showAssistant} onClose={() => setShowAssistant(false)} onCreated={refresh} />

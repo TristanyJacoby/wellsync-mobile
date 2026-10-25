@@ -1489,31 +1489,6 @@ ion-range {
   margin: 0;
 }
 
-/* ---------- Floating add-task control ---------- */
-
-.ws-fab {
-  position: fixed;
-  bottom: calc(94px + env(safe-area-inset-bottom));
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  background: var(--ws-dark);
-  color: var(--ws-dark-ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  box-shadow: 0 10px 26px rgba(20, 15, 10, 0.32);
-  z-index: 5;
-}
-
-.ws-fab:active {
-  transform: translateY(1px);
-}
-
 /* ---------- Buttons / controls ---------- */
 
 ion-button {
@@ -2547,6 +2522,7 @@ ion-alert:is(.md, .ios) .alert-button-role-destructive {
 }
 
 .ws-chat__bubble--user {
+  white-space: pre-line;
   align-self: flex-end;
   border-radius: 18px 18px 4px 18px;
   background: var(--ws-dark);
@@ -2557,49 +2533,10 @@ ion-alert:is(.md, .ios) .alert-button-role-destructive {
   color: var(--ws-ink-muted);
 }
 
-.ws-chat__chips {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
 
-.ws-chat__done {
-  padding: 8px 16px;
-  border: none;
-  border-radius: var(--ws-radius-pill);
-  background: var(--ws-dark);
-  color: var(--ws-dark-ink);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-}
 
-.ws-chat__done:disabled {
-  opacity: 0.4;
-}
 
-.ws-chat__input {
-  position: sticky;
-  bottom: 0;
-  display: flex;
-  gap: 8px;
-  padding: 10px 0 4px;
-}
 
-.ws-chat__input input {
-  flex: 1;
-  min-width: 0;
-  padding: 0 18px;
-  height: 44px;
-  border: 1px solid var(--ws-glass-border);
-  border-radius: var(--ws-radius-pill);
-  background: var(--ws-glass-bg-strong);
-  color: var(--ws-ink);
-  font: inherit;
-  font-size: 14px;
-}
 
 .ws-draft {
   display: flex;
@@ -2660,4 +2597,305 @@ ion-alert:is(.md, .ios) .alert-button-role-destructive {
   margin-top: 8px;
   font-weight: 700;
   color: var(--ws-low-text);
+}
+
+/* ---------- WellBot sheet: header, intro, question card, composer ---------- */
+
+.ws-sheet-header ion-toolbar,
+.ws-sheet-footer ion-toolbar {
+  --background: transparent;
+  --border-width: 0;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+.ws-sheet-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+}
+
+.ws-sheet-bar h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.ws-chat-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 36px;
+  text-align: center;
+}
+
+.ws-chat-intro__icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  background: var(--ws-amber-dim);
+  color: var(--ws-amber-strong);
+}
+
+.ws-chat-intro h3 {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ws-chat-intro p {
+  max-width: 300px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ws-ink-muted);
+}
+
+.ws-chat-intro__examples {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.ws-chat-intro__note {
+  margin-top: 10px;
+  font-size: 12px !important;
+  color: var(--ws-ink-faint) !important;
+}
+
+.ws-chat__ai {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ws-ask {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px;
+}
+
+.ws-ask.is-submitted {
+  opacity: 0.55;
+}
+
+.ws-ask__q {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.ws-ask__q legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ws-ink);
+}
+
+.ws-ask__num {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--ws-amber-dim);
+  color: var(--ws-amber-strong);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 22px;
+  text-align: center;
+}
+
+.ws-ask__options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ws-ask__other {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px dashed var(--ws-glass-border);
+  border-radius: var(--ws-radius-sm);
+  background: transparent;
+  color: var(--ws-ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+/* Pinned composer: grows to MAX_INPUT_HEIGHT, then scrolls inside the box. */
+.ws-composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+}
+
+.ws-composer textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  max-height: 120px;
+  padding: 11px 18px;
+  border: 1px solid var(--ws-glass-border);
+  border-radius: 22px;
+  background: var(--ws-glass-bg-strong);
+  color: var(--ws-ink);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  resize: none;
+  overflow-y: auto;
+}
+
+.ws-composer textarea:disabled {
+  opacity: 0.6;
+}
+
+.ws-composer .ws-icon-btn:disabled {
+  opacity: 0.4;
+}
+
+/* ---------- Home floating button + pop-out menu ---------- */
+
+.ws-fab-slot {
+  margin: 0 4px 12px 0;
+  z-index: 10;
+}
+
+.ws-fab {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--ws-amber-strong);
+  color: #1c1c1e;
+  font-size: 30px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transition: transform 0.22s ease;
+}
+
+.ws-fab:active {
+  transform: scale(0.94);
+}
+
+.ws-fab-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+}
+
+.ws-fab-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 12, 20, 0);
+  backdrop-filter: blur(0);
+  -webkit-backdrop-filter: blur(0);
+  transition: background 0.2s ease, backdrop-filter 0.2s ease, -webkit-backdrop-filter 0.2s ease;
+}
+
+.ws-fab-layer.is-open .ws-fab-backdrop {
+  background: rgba(8, 12, 20, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.ws-fab-menu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.ws-fab-layer.is-open .ws-fab--close {
+  transform: rotate(135deg);
+}
+
+.ws-fab-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(24px) scale(0.7);
+  transform-origin: bottom right;
+  transition: opacity 0.2s ease, transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ws-fab-layer.is-open .ws-fab-item {
+  opacity: 1;
+  transform: none;
+}
+
+.ws-fab-item--1 {
+  transition-delay: 0.02s;
+}
+
+.ws-fab-item--2 {
+  transition-delay: 0.07s;
+}
+
+.ws-fab-item__label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  padding: 8px 14px;
+  border-radius: var(--ws-radius-md);
+  background: var(--ws-popup-bg);
+  color: var(--ws-ink);
+  box-shadow: var(--ws-glass-shadow-sm);
+}
+
+.ws-fab-item__label strong {
+  font-size: 14px;
+}
+
+.ws-fab-item__label span {
+  font-size: 12px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-fab-item__icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--ws-popup-bg);
+  color: var(--ws-ink);
+  font-size: 22px;
+  box-shadow: var(--ws-glass-shadow-sm);
+}
+
+.ws-fab-item__icon--ai {
+  background: var(--ws-amber-strong);
+  color: #1c1c1e;
 }

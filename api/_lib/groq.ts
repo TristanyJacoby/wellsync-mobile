@@ -16,15 +16,26 @@ const TOOLS = [
     function: {
       name: 'ask',
       description:
-        'Ask ONE short clarifying question when the request is too brief to build a good task (missing a deadline or scope). Offer 2-5 short options.',
+        'Ask the user a SET of 1-3 short clarifying questions at once when the request is too brief to build a good task (missing a deadline, size or importance). Each question has 2-5 short options.',
       parameters: {
         type: 'object',
         properties: {
-          question: { type: 'string' },
-          options: { type: 'array', items: { type: 'string' }, minItems: 2, maxItems: 5 },
-          multiSelect: { type: 'boolean' },
+          questions: {
+            type: 'array',
+            minItems: 1,
+            maxItems: 3,
+            items: {
+              type: 'object',
+              properties: {
+                question: { type: 'string' },
+                options: { type: 'array', items: { type: 'string' }, minItems: 2, maxItems: 5 },
+                multiSelect: { type: 'boolean' },
+              },
+              required: ['question', 'options'],
+            },
+          },
         },
-        required: ['question', 'options'],
+        required: ['questions'],
       },
     },
   },
@@ -59,7 +70,7 @@ function systemPrompt(ctx: Ctx): string {
     `Today is ${ctx.today}.`,
     `Categories (id: name): ${ctx.categories.map((c) => `${c.id}: ${c.name}`).join('; ') || 'none'}.`,
     `Projects (id: name): ${ctx.projects.map((p) => `${p.id}: ${p.name}`).join('; ') || 'none'}.`,
-    'Always answer by calling a tool. If the request has no deadline, call ask once (never more than two questions in total). Otherwise call draft_task.',
+    'Always answer by calling a tool. If you are missing key details, call ask ONCE with all your questions together (at most 3). After the user has answered, always call draft_task. Otherwise call draft_task straight away.',
     'Never invent ids. Resolve relative dates against today. Keep titles under 60 characters.',
   ].join('\n');
 }
@@ -104,9 +115,18 @@ export async function groqReply(uid: string, messages: Msg[], ctx: Ctx): Promise
     const input = JSON.parse(call.arguments) as Record<string, unknown>;
 
     if (call.name === 'ask') {
-      const options = (Array.isArray(input.options) ? input.options : []).map((o) => clean(o, 60)).filter(Boolean).slice(0, 5);
-      if (options.length < 2) return null;
-      return { kind: 'ask', question: clean(input.question, 200), options, multiSelect: input.multiSelect === true };
+      const questions = (Array.isArray(input.questions) ? input.questions : [])
+        .slice(0, 3)
+        .map((q: Record<string, unknown>, i: number) => ({
+          id: `q${i}`,
+          question: clean(q.question, 200),
+          options: (Array.isArray(q.options) ? q.options : []).map((o) => clean(o, 60)).filter(Boolean).slice(0, 5),
+          multiSelect: q.multiSelect === true,
+        }))
+        .filter((q) => q.question && q.options.length >= 2);
+      // A model that asks again after being answered gets the rule-based draft instead.
+      if (!questions.length || messages.some((m) => m.role === 'assistant')) return null;
+      return { kind: 'ask', questions };
     }
     if (call.name !== 'draft_task') return null;
 

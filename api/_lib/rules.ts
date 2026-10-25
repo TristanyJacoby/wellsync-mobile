@@ -16,8 +16,15 @@ export interface Msg {
   content: string;
 }
 
+export interface AskQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  multiSelect: boolean;
+}
+
 export type Reply =
-  | { kind: 'ask'; question: string; options: string[]; multiSelect: boolean }
+  | { kind: 'ask'; questions: AskQuestion[] }
   | {
       kind: 'draft_task';
       task: {
@@ -142,16 +149,19 @@ export function draftReply(messages: Msg[], ctx: Ctx): Reply {
   if (!dueDate && !alreadyAsked) {
     return {
       kind: 'ask',
-      question: 'When is it due?',
-      options: ['Today', 'Tomorrow', 'This week', 'Next week'],
-      multiSelect: false,
+      questions: [
+        { id: 'q0', question: 'When is it due?', options: ['Today', 'Tomorrow', 'This week', 'Next week'], multiSelect: false },
+        { id: 'q1', question: 'How important is it?', options: ['Low', 'Medium', 'High'], multiSelect: false },
+      ],
     };
   }
   const due = dueDate ?? iso(addDays(parseISO(ctx.today), 7));
 
   const kind = KINDS.find((k) => k.words.test(lower)) ?? FALLBACK;
   const daysAway = Math.round((parseISO(due).getTime() - parseISO(ctx.today).getTime()) / 86_400_000);
-  const urgent = /\b(urgent|asap|important|deadline)\b/.test(lower) || (daysAway <= 2 && kind.what !== 'errand');
+  // The answer to "How important is it?" wins over the keyword guess.
+  const stated = lower.match(/how important is it\?:? *(low|medium|high)/)?.[1] as 'low' | 'medium' | 'high' | undefined;
+  const urgent = /\b(urgent|asap|deadline)\b/.test(lower) || (daysAway <= 2 && kind.what !== 'errand');
 
   const category =
     ctx.categories.find((c) => c.name && lower.includes(c.name.toLowerCase())) ??
@@ -165,7 +175,7 @@ export function draftReply(messages: Msg[], ctx: Ctx): Reply {
       title: titleFrom(first),
       description: '',
       dueDate: due,
-      priority: urgent ? 'high' : kind.priority,
+      priority: stated ?? (urgent ? 'high' : kind.priority),
       categoryId: category?.id ?? '',
       // A tight deadline shrinks the plan to what can realistically fit.
       effortDays: Math.max(0.5, Math.min(kind.effortDays, daysAway <= 0 ? 0.5 : daysAway)),

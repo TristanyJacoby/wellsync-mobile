@@ -26,8 +26,15 @@ export interface DraftTask {
   phases: string[];
 }
 
+export interface AskQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  multiSelect: boolean;
+}
+
 export type AssistantReply =
-  | { kind: 'ask'; question: string; options: string[]; multiSelect: boolean }
+  | { kind: 'ask'; questions: AskQuestion[] }
   | { kind: 'draft_task'; task: DraftTask };
 
 export class AssistantError extends Error {

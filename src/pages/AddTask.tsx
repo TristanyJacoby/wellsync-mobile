@@ -2,7 +2,6 @@ import { IonContent, IonInput, IonTextarea, IonSelect, IonSelectOption, IonIcon,
 import { useEffect, useState } from 'react';
 import {
   closeOutline,
-  sparklesOutline,
   checkmarkOutline,
   addOutline,
   removeOutline,
@@ -16,6 +15,7 @@ import { addTask, updateTask, getProjects, getCategories } from '../services/sto
 import { DEFAULT_CATEGORIES } from '../utils/categories';
 import { assignQuadrant } from '../utils/scheduler';
 import AssistantSheet from '../components/AssistantSheet';
+import WellBotIcon from '../components/WellBotIcon';
 import type { Task, TaskPhase, Priority, Category, CategoryDef, Project } from '../types';
 
 const PRIORITY_OPTIONS: { id: Priority; label: string; bg: string; text: string }[] = [
@@ -168,7 +168,7 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
 
         {!isEditing && (
           <button type="button" className="ws-assistant-link" onClick={() => setShowAssistant(true)}>
-            <IonIcon icon={sparklesOutline} /> Draft with the task assistant
+            <WellBotIcon size={16} /> Draft with WellBot
           </button>
         )}
 
