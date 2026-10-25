@@ -3906,3 +3906,31 @@ ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
   width: 100%;
   height: 44px;
 }
+
+/* ---------- Step back after an accidental tap ---------- */
+
+.ws-task-card__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ws-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid var(--ws-glass-border);
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-glass-bg);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ws-ink-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ws-back-btn:active {
+  transform: translateY(1px);
+}

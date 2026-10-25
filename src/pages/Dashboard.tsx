@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { useHistory } from 'react-router-dom';
 import {
   notificationsOutline,
+  arrowUndoOutline,
   flameOutline,
   checkmarkCircleOutline,
   chevronDownOutline,
@@ -20,7 +21,7 @@ import { useTasksChanged } from '../contexts/TaskChangeContext';
 import { getReminderPermission, requestReminderPermission, syncReminders, type ReminderPermission } from '../services/reminders';
 import { buildNotifications, type AppNotification } from '../utils/notifications';
 import { getScheduleRecommendations, isInReminderWindow, type ScoredTask } from '../utils/scheduler';
-import { priorityPillStyle, statusPillStyle, toggleDone, cycleStatus, stopping } from '../utils/board';
+import { priorityPillStyle, statusPillStyle, toggleDone, cycleStatus, withStatus, stopping } from '../utils/board';
 import { useUndoToast } from '../hooks/useUndoToast';
 import { useAuth } from '../contexts/AuthContext';
 import { useAvatar } from '../contexts/AvatarContext';
@@ -228,6 +229,15 @@ export default function Dashboard() {
     }
   }
 
+  /** The way back after an accidental tap: In Progress -> To Do, and Done -> where it was. */
+  async function handleStepBack(task: Task) {
+    const updated = task.status === 'done' ? toggleDone(task) : withStatus(task, 'todo');
+    // A running timer belongs to the stage the task just left.
+    if (pomodoro.timer?.taskId === task.id) pomodoro.stop();
+    await saveTask(updated);
+    showUndo(updated.status === 'todo' ? 'Moved back to To Do' : 'Task reopened', () => saveTask(task));
+  }
+
   /** Marks a task done directly (the "all phases done" prompt). */
   async function handleToggleDone(task: Task) {
     const updated = toggleDone(task);
@@ -301,9 +311,21 @@ export default function Dashboard() {
             <IonIcon icon={timeOutline} />
             {task.dueTime || task.dueDate}
           </span>
-          <span className="ws-pill" style={{ background: sPill.bg, color: sPill.text }}>
-            {sPill.label}
-          </span>
+          <div className="ws-task-card__status">
+            {task.status !== 'todo' && (
+              <button
+                type="button"
+                className="ws-back-btn"
+                aria-label={task.status === 'done' ? `Reopen ${task.title}` : `Move ${task.title} back to To Do`}
+                onClick={stopping(() => handleStepBack(task))}
+              >
+                <IonIcon icon={arrowUndoOutline} /> {task.status === 'done' ? 'Reopen' : 'Back to To Do'}
+              </button>
+            )}
+            <span className="ws-pill" style={{ background: sPill.bg, color: sPill.text }}>
+              {sPill.label}
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -437,6 +459,7 @@ export default function Dashboard() {
             onSave={saveTask}
             onEdit={setEditingTask}
             onMarkDone={handleToggleDone}
+            onStepBack={handleStepBack}
           />
         ) : (
           <>

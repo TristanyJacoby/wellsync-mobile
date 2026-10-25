@@ -1,6 +1,6 @@
 import { useIonToast } from '@ionic/react';
 
-const UNDO_WINDOW_MS = 5000;
+const UNDO_WINDOW_MS = 8000;
 
 /**
  * Short toast with an Undo button, for actions a tap can trigger by

@@ -1,5 +1,5 @@
 import { IonIcon, useIonToast } from '@ionic/react';
-import { checkmarkOutline, timerOutline, pencilOutline } from 'ionicons/icons';
+import { checkmarkOutline, timerOutline, pencilOutline, arrowUndoOutline } from 'ionicons/icons';
 import { usePomodoro } from '../contexts/PomodoroContext';
 import { formatFocusTime } from '../utils/progress';
 import TaskProgressBar from './TaskProgressBar';
@@ -15,11 +15,13 @@ export default function FocusPanel({
   onSave,
   onEdit,
   onMarkDone,
+  onStepBack,
 }: {
   tasks: Task[];
   onSave: (task: Task) => Promise<void>;
   onEdit: (task: Task) => void;
   onMarkDone: (task: Task) => void;
+  onStepBack: (task: Task) => void;
 }) {
   const { timer } = usePomodoro();
   const [presentToast] = useIonToast();
@@ -94,6 +96,9 @@ export default function FocusPanel({
                   ? `${formatFocusTime(task.focusMinutes)} focused · ${task.pomodoros ?? 0} session${task.pomodoros === 1 ? '' : 's'}`
                   : 'No focus time yet'}
               </span>
+              <button type="button" className="ws-back-btn" aria-label={`Move ${task.title} back to To Do`} onClick={() => onStepBack(task)}>
+                <IonIcon icon={arrowUndoOutline} /> Back to To Do
+              </button>
             </div>
           </div>
         );
