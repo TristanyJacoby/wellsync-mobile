@@ -4,6 +4,7 @@ import { signOut } from 'firebase/auth';
 import { pencilOutline, clipboardOutline, checkmarkDoneOutline, hourglassOutline, statsChartOutline } from 'ionicons/icons';
 import { auth } from '../services/firebase';
 import { getProfile, getTasks, getPlan } from '../services/storage';
+import { useTasksChanged } from '../contexts/TaskChangeContext';
 import { setPlan } from '../services/assistant';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -50,6 +51,9 @@ export default function Profile() {
   useIonViewWillEnter(() => {
     refresh();
   });
+
+  // The global create button can add a task while this tab is showing.
+  useTasksChanged(refresh);
 
   // Tracks which StatCard is most centered within the horizontally-scrolling
   // carousel, so the CSS can scale/brighten it and dim the rest - gives the
@@ -105,7 +109,7 @@ export default function Profile() {
 
   return (
     <IonPage>
-      <IonContent fullscreen className="ion-padding">
+      <IonContent fullscreen className="ion-padding ws-has-fab">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 12, marginBottom: 24 }}>
           <Avatar name={profile?.name ?? user?.email ?? ''} photoURL={user?.photoURL} size={84} />
           <h2 style={{ fontSize: 20, fontWeight: 800, marginTop: 14 }}>{profile?.name ?? 'Your profile'}</h2>

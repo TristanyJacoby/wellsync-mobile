@@ -2775,9 +2775,15 @@ ion-alert:is(.md, .ios) .alert-button-role-destructive {
 
 /* ---------- Home floating button + pop-out menu ---------- */
 
-.ws-fab-slot {
-  margin: 0 4px 12px 0;
-  z-index: 10;
+.ws-fab-dock {
+  position: fixed;
+  right: 20px;
+  z-index: 900;
+}
+
+/* Keeps the last card clear of the docked create button. */
+ion-content.ws-has-fab {
+  --padding-bottom: 96px;
 }
 
 .ws-fab {
@@ -2898,4 +2904,38 @@ ion-alert:is(.md, .ios) .alert-button-role-destructive {
 .ws-fab-item__icon--ai {
   background: var(--ws-amber-strong);
   color: #1c1c1e;
+}
+
+/* ---------- Tab switch transition ---------- */
+
+/* A tab page becoming visible (display: none -> block) restarts this, so the
+   incoming page fades and slides in from the side the user moved toward.
+   TabDirection in App.tsx sets data-tab-dir. */
+:root {
+  --ws-tab-shift: 28px;
+}
+
+:root[data-tab-dir='back'] {
+  --ws-tab-shift: -28px;
+}
+
+@keyframes ws-tab-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--ws-tab-shift)) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
+  animation: ws-tab-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
+    animation: none;
+  }
 }

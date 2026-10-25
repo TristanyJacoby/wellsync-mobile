@@ -9,6 +9,7 @@ import {
   closeOutline,
 } from 'ionicons/icons';
 import { getTasks, getProfile, updateTask } from '../services/storage';
+import { useTasksChanged } from '../contexts/TaskChangeContext';
 import { KanbanView, FrogView, OneThreeFiveView, IvyLeeView, MoscowView } from '../components/FrameworkViews';
 import AddTask from './AddTask';
 import type { PriorityLens, Quadrant, Task } from '../types';
@@ -193,6 +194,9 @@ export default function Frameworks() {
     refresh();
   });
 
+  // The global create button can add a task while this tab is showing.
+  useTasksChanged(refresh);
+
   function refresh() {
     getTasks()
       .then(setTasks)
@@ -237,7 +241,7 @@ export default function Frameworks() {
 
   return (
     <IonPage>
-      <IonContent fullscreen className="ion-padding">
+      <IonContent fullscreen className="ion-padding ws-has-fab">
         <h1 className="ws-headline" style={{ marginTop: 6 }}>
           Frameworks
         </h1>

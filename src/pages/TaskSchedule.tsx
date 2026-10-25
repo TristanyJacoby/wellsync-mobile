@@ -16,6 +16,7 @@ import {
   pencilOutline,
 } from 'ionicons/icons';
 import { getTasks, getCategories, addTask, updateTask, deleteTask } from '../services/storage';
+import { useTasksChanged } from '../contexts/TaskChangeContext';
 import { DEFAULT_CATEGORIES, findCategory } from '../utils/categories';
 import { priorityPillStyle, statusPillStyle, cycleStatus, stopping } from '../utils/board';
 import { useUndoToast } from '../hooks/useUndoToast';
@@ -63,6 +64,9 @@ export default function TaskSchedule() {
   useIonViewWillEnter(() => {
     refresh();
   });
+
+  // The global create button can add a task while this tab is showing.
+  useTasksChanged(refresh);
 
   function refresh() {
     getTasks().then(setTasks);
@@ -145,7 +149,7 @@ export default function TaskSchedule() {
 
   return (
     <IonPage>
-      <IonContent fullscreen className="ion-padding">
+      <IonContent fullscreen className="ion-padding ws-has-fab">
         <div className="ws-header">
           <button className="ws-icon-btn" aria-label="Back to home" onClick={() => history.push('/home')}>
             <IonIcon icon={arrowBackOutline} style={{ fontSize: 18 }} />

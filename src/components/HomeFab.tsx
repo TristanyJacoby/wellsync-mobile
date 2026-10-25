@@ -9,34 +9,39 @@ interface Anchor {
   bottom: number;
 }
 
+const GAP_ABOVE_TAB_BAR = 16;
+const FALLBACK_BOTTOM = 96;
+
 /**
- * Bottom-right "+" on Home. Tapping it blurs and dims the whole screen and
- * pops two actions out of the button. The open state is drawn in a portal on
- * <body> so the backdrop also covers the tab bar; the portal's button sits at
- * the exact spot of the real one, which is hidden meanwhile.
+ * The app-wide "+" button, docked just above the tab bar on every tab.
+ * Tapping it blurs and dims the whole screen and pops two actions out of the
+ * button. The open state is drawn in a portal on <body> so the backdrop also
+ * covers the tab bar; the portal's button sits at the exact spot of the real
+ * one, which is hidden meanwhile.
  */
 export default function HomeFab({ onCreateTask, onOpenAssistant }: { onCreateTask: () => void; onOpenAssistant: () => void }) {
   const ref = useRef<HTMLButtonElement>(null);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const [open, setOpen] = useState(false);
-  // Extra px to raise the button so it always clears the floating tab bar.
-  const [lift, setLift] = useState(0);
+  const [bottom, setBottom] = useState(FALLBACK_BOTTOM);
 
+  // Sit a fixed gap above the floating tab bar, wherever it ends up (safe
+  // areas, orientation changes, browser toolbars).
   useEffect(() => {
-    const GAP = 16;
-    function clearTabBar() {
-      const btn = ref.current?.getBoundingClientRect();
-      const bar = document.querySelector('ion-tab-bar')?.getBoundingClientRect();
-      // Hidden tab pages report an empty rect; leave those alone.
-      if (!btn || !bar || !btn.width || !bar.width) return;
-      setLift((cur) => Math.max(0, btn.bottom + cur - bar.top + GAP));
+    const bar = document.querySelector('ion-tab-bar');
+    function place() {
+      const rect = bar?.getBoundingClientRect();
+      if (rect?.height) setBottom(window.innerHeight - rect.top + GAP_ABOVE_TAB_BAR);
     }
-    clearTabBar();
-    const t = setTimeout(clearTabBar, 400); // after Ionic's page transition settles
-    window.addEventListener('resize', clearTabBar);
+    place();
+    const t = setTimeout(place, 400); // after first layout settles
+    window.addEventListener('resize', place);
+    const observer = bar && 'ResizeObserver' in window ? new ResizeObserver(place) : null;
+    if (bar) observer?.observe(bar);
     return () => {
       clearTimeout(t);
-      window.removeEventListener('resize', clearTabBar);
+      window.removeEventListener('resize', place);
+      observer?.disconnect();
     };
   }, []);
 
@@ -58,17 +63,19 @@ export default function HomeFab({ onCreateTask, onOpenAssistant }: { onCreateTas
 
   return (
     <>
-      <button
-        ref={ref}
-        type="button"
-        className="ws-fab"
-        style={{ marginBottom: lift, ...(anchor ? { visibility: 'hidden' } : {}) }}
-        aria-label="Add"
-        aria-haspopup="menu"
-        onClick={show}
-      >
-        <IonIcon icon={addOutline} />
-      </button>
+      <div className="ws-fab-dock" style={{ bottom }}>
+        <button
+          ref={ref}
+          type="button"
+          className="ws-fab"
+          style={anchor ? { visibility: 'hidden' } : undefined}
+          aria-label="Add"
+          aria-haspopup="menu"
+          onClick={show}
+        >
+          <IonIcon icon={addOutline} />
+        </button>
+      </div>
 
       {anchor &&
         createPortal(

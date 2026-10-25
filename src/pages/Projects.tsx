@@ -11,6 +11,7 @@ import {
   closeOutline,
 } from 'ionicons/icons';
 import { getProjects, addProject, updateProject, deleteProject, getTasks, addTask, updateTask, deleteTask } from '../services/storage';
+import { useTasksChanged } from '../contexts/TaskChangeContext';
 import { statusPillStyle, stopping } from '../utils/board';
 import { useUndoToast } from '../hooks/useUndoToast';
 import AddTask from './AddTask';
@@ -31,6 +32,9 @@ export default function Projects() {
   useIonViewWillEnter(() => {
     refresh();
   });
+
+  // The global create button can add a task while this tab is showing.
+  useTasksChanged(refresh);
 
   function refresh() {
     getProjects()
@@ -99,7 +103,7 @@ export default function Projects() {
 
   return (
     <IonPage>
-      <IonContent fullscreen className="ion-padding">
+      <IonContent fullscreen className="ion-padding ws-has-fab">
         <h1 className="ws-headline" style={{ marginTop: 6 }}>
           Your Projects
         </h1>

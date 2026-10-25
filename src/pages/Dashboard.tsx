@@ -1,4 +1,4 @@
-import { IonContent, IonFab, IonPage, IonIcon, IonModal, useIonViewWillEnter } from '@ionic/react';
+import { IonContent, IonPage, IonIcon, IonModal, useIonViewWillEnter } from '@ionic/react';
 import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { useHistory } from 'react-router-dom';
@@ -14,6 +14,7 @@ import {
   timerOutline,
 } from 'ionicons/icons';
 import { getTasks, getProfile, addTask, updateTask, deleteTask, getSeenNotifications, saveSeenNotifications } from '../services/storage';
+import { useTasksChanged } from '../contexts/TaskChangeContext';
 import { getReminderPermission, requestReminderPermission, syncReminders, type ReminderPermission } from '../services/reminders';
 import { buildNotifications, type AppNotification } from '../utils/notifications';
 import { getScheduleRecommendations, isInReminderWindow, type ScoredTask } from '../utils/scheduler';
@@ -25,8 +26,6 @@ import ProgressRing from '../components/ProgressRing';
 import TaskProgressBar from '../components/TaskProgressBar';
 import FocusPanel from '../components/FocusPanel';
 import NotificationCenter from '../components/NotificationCenter';
-import AssistantSheet from '../components/AssistantSheet';
-import HomeFab from '../components/HomeFab';
 import { usePomodoro, formatClock } from '../contexts/PomodoroContext';
 import AddTask from './AddTask';
 import type { Task, OnboardingProfile, TaskStatus } from '../types';
@@ -48,7 +47,6 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [profile, setProfile] = useState<OnboardingProfile | null>(null);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null);
-  const [showAddTask, setShowAddTask] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   // Holds a task briefly after it's marked done so its row (and the
   // checkbox burst animation) stay visible for a beat before the normal
@@ -57,7 +55,6 @@ export default function Dashboard() {
   const [celebrating, setCelebrating] = useState<Task | null>(null);
   const [showLater, setShowLater] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showAssistant, setShowAssistant] = useState(false);
   const [seen, setSeen] = useState<string[]>([]);
   const [permission, setPermission] = useState<ReminderPermission>('unsupported');
   const showUndo = useUndoToast();
@@ -79,6 +76,9 @@ export default function Dashboard() {
   useIonViewWillEnter(() => {
     refresh();
   });
+
+  // The global create button can add a task while this tab is showing.
+  useTasksChanged(refresh);
 
   function refresh() {
     getTasks().then(setTasks);
@@ -277,7 +277,7 @@ export default function Dashboard() {
 
   return (
     <IonPage>
-      <IonContent fullscreen className="ion-padding">
+      <IonContent fullscreen className="ion-padding ws-has-fab">
         <div className="ws-header">
           <div className="ws-header__identity">
             <Avatar name={profile?.name ?? user?.email ?? ''} photoURL={user?.photoURL} />
@@ -407,15 +407,7 @@ export default function Dashboard() {
             )}
           </>
         )}
-        {/* Keeps the last card clear of the floating button. */}
-        <div style={{ height: 80 }} />
-
-        <IonFab slot="fixed" vertical="bottom" horizontal="end" className="ws-fab-slot">
-          <HomeFab onCreateTask={() => setShowAddTask(true)} onOpenAssistant={() => setShowAssistant(true)} />
-        </IonFab>
       </IonContent>
-
-      <AssistantSheet isOpen={showAssistant} onClose={() => setShowAssistant(false)} onCreated={refresh} />
 
       <IonModal isOpen={showNotifications} onDidDismiss={closeNotifications}>
         <NotificationCenter
@@ -433,16 +425,12 @@ export default function Dashboard() {
       </IonModal>
 
       <IonModal
-        isOpen={showAddTask || !!editingTask}
-        onDidDismiss={() => {
-          setShowAddTask(false);
-          setEditingTask(null);
-        }}
+        isOpen={!!editingTask}
+        onDidDismiss={() => setEditingTask(null)}
       >
         <AddTask
           editTask={editingTask ?? undefined}
           onClose={() => {
-            setShowAddTask(false);
             setEditingTask(null);
             refresh();
           }}
