@@ -11,7 +11,9 @@ opened it from), or with a cable and USB debugging on:
 
 `android/` is gitignored, so `scripts/build-android.sh` applies everything custom each time:
 Gradle wrapper 8.7, the `SCHEDULE_EXACT_ALARM` permission, and the app icon and launch screen
-generated from `assets/*.svg` (edit the SVG, then `node scripts/make-assets.mjs` to refresh the PNGs).
+generated from the one logo, `assets/logo.png` (2000x2000, yellow `#ffde59`). To change the logo, replace that
+file and run `node scripts/make-assets.mjs`; it rebuilds `assets/*.png` and `public/logo.png` (browser tab icon
+and the in-app splash).
 
 ## Google sign-in inside the app (one-time Firebase setup)
 

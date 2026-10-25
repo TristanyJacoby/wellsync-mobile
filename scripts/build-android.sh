@@ -32,8 +32,11 @@ grep -q 'xmlns:tools' "$MANIFEST" || sed -i '' 's#<manifest xmlns:android="http:
 for perm in com.google.android.gms.permission.AD_ID android.permission.ACCESS_ADSERVICES_ATTRIBUTION android.permission.ACCESS_ADSERVICES_AD_ID android.permission.ACCESS_ADSERVICES_CUSTOM_AUDIENCE android.permission.ACCESS_ADSERVICES_TOPICS; do
   grep -q "$perm" "$MANIFEST" || sed -i '' "s#<uses-permission android:name=\"android.permission.INTERNET\" />#<uses-permission android:name=\"android.permission.INTERNET\" />\n    <uses-permission android:name=\"$perm\" tools:node=\"remove\" />#" "$MANIFEST"
 done
+# Android 12+ draws its own launch window before the app; give it the logo's yellow instead of white.
+STYLES=android/app/src/main/res/values/styles.xml
+grep -q windowSplashScreenBackground "$STYLES" || sed -i '' 's#<item name="android:background">@drawable/splash</item>#<item name="android:background">@drawable/splash</item>\n        <item name="windowSplashScreenBackground">\#ffde59</item>#' "$STYLES"
 # App icon and launch screen from assets/*.png
-npx capacitor-assets generate --android --iconBackgroundColor '#16212e' --splashBackgroundColor '#16212e' > /dev/null
+npx capacitor-assets generate --android --iconBackgroundColor '#ffde59' --splashBackgroundColor '#ffde59' > /dev/null
 
 echo "==> Gradle"
 (cd android && ./gradlew assembleDebug --no-daemon -q)
