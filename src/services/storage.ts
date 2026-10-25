@@ -17,7 +17,14 @@ function requireUid(): string {
 export async function getTasks(): Promise<Task[]> {
   const uid = requireUid();
   const snapshot = await getDocs(collection(db, 'users', uid, 'tasks'));
-  return snapshot.docs.map((d) => d.data() as Task);
+  return snapshot.docs.map((d) => migrateTask(d.data()));
+}
+
+// "Waiting" (stored as 'in-review') was removed as redundant with In Progress,
+// so older tasks that still carry it are read as In Progress.
+function migrateTask(raw: Record<string, unknown>): Task {
+  const fix = (v: unknown) => (v === 'in-review' ? 'in-progress' : v);
+  return { ...raw, status: fix(raw.status), ...(raw.statusBeforeDone ? { statusBeforeDone: fix(raw.statusBeforeDone) } : {}) } as Task;
 }
 
 export async function addTask(task: Task): Promise<void> {
@@ -161,4 +168,16 @@ export async function getProjectsLayout(): Promise<ProjectsLayout> {
 export async function saveProjectsLayout(layout: ProjectsLayout): Promise<void> {
   const uid = requireUid();
   await setDoc(doc(db, 'users', uid), { projectsLayout: layout }, { merge: true });
+}
+
+// Tags the user has typed before, offered as one-tap chips on later tasks.
+export async function getSavedTags(): Promise<string[]> {
+  const uid = requireUid();
+  const snapshot = await getDoc(doc(db, 'users', uid));
+  return (snapshot.data()?.savedTags as string[] | undefined) ?? [];
+}
+
+export async function saveSavedTags(tags: string[]): Promise<void> {
+  const uid = requireUid();
+  await setDoc(doc(db, 'users', uid), { savedTags: tags.slice(0, 100) }, { merge: true });
 }

@@ -1,5 +1,5 @@
-import { IonContent, IonInput, IonTextarea, IonSelect, IonSelectOption, IonIcon, IonRange } from '@ionic/react';
-import { useEffect, useState } from 'react';
+import { IonContent, IonInput, IonTextarea, IonSelect, IonSelectOption, IonIcon } from '@ionic/react';
+import { useEffect, useRef, useState } from 'react';
 import {
   closeOutline,
   checkmarkOutline,
@@ -7,12 +7,12 @@ import {
   removeOutline,
   calendarOutline,
   timeOutline,
-  arrowUpOutline,
   chevronDownOutline,
   chevronUpOutline,
 } from 'ionicons/icons';
-import { addTask, updateTask, getProjects, getCategories } from '../services/storage';
-import { DEFAULT_CATEGORIES } from '../utils/categories';
+import { addTask, updateTask, getProjects, getCategories, saveCategories, addProject, getSavedTags, saveSavedTags } from '../services/storage';
+import { DEFAULT_CATEGORIES, CATEGORY_COLORS } from '../utils/categories';
+import PhaseList from '../components/PhaseList';
 import { assignQuadrant } from '../utils/scheduler';
 import AssistantSheet from '../components/AssistantSheet';
 import WellBotIcon from '../components/WellBotIcon';
@@ -49,7 +49,11 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
   const [tagInput, setTagInput] = useState('');
   const [phases, setPhases] = useState<TaskPhase[]>(editTask?.phases ?? []);
   const [phaseInput, setPhaseInput] = useState('');
-  const [manualProgress, setManualProgress] = useState(editTask?.manualProgress ?? 0);
+  const [savedTags, setSavedTags] = useState<string[]>([]);
+  const [newCategory, setNewCategory] = useState<string | null>(null); // null = closed
+  const [newProject, setNewProject] = useState<string | null>(null);
+  const phaseInputRef = useRef<HTMLInputElement>(null);
+  const tagInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [showMore, setShowMore] = useState(false);
@@ -65,33 +69,64 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
         if (!editTask) setCategory((c) => (list.some((x) => x.id === c) ? c : list[0].id));
       })
       .catch((err) => console.error('Failed to load categories', err));
+    getSavedTags()
+      .then(setSavedTags)
+      .catch((err) => console.error('Failed to load saved tags', err));
   }, []);
 
+  // An empty "+ Add" still responds: it puts the cursor in the field.
   const addTag = () => {
     const value = tagInput.trim();
-    if (value && !tags.includes(value)) setTags([...tags, value]);
+    if (!value) return tagInputRef.current?.focus();
+    if (!tags.includes(value)) setTags([...tags, value]);
+    if (!savedTags.some((t) => t.toLowerCase() === value.toLowerCase())) {
+      const next = [...savedTags, value];
+      setSavedTags(next);
+      saveSavedTags(next).catch((err) => console.error('Failed to save tag', err));
+    }
     setTagInput('');
   };
 
-  const removeTag = (value: string) => {
-    setTags(tags.filter((t) => t !== value));
-  };
+  const toggleTag = (value: string) => setTags(tags.includes(value) ? tags.filter((t) => t !== value) : [...tags, value]);
 
   const addPhase = () => {
     const value = phaseInput.trim();
-    if (value) setPhases([...phases, { id: crypto.randomUUID(), title: value, done: false }]);
+    if (!value) return phaseInputRef.current?.focus();
+    setPhases([...phases, { id: crypto.randomUUID(), title: value, done: false }]);
     setPhaseInput('');
   };
 
-  const updatePhase = (id: string, patch: Partial<TaskPhase>) => {
-    setPhases(phases.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+  const createCategory = async () => {
+    const name = (newCategory ?? '').trim();
+    if (!name) return;
+    const existing = categories.find((c) => c.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      setCategory(existing.id);
+    } else {
+      const used = new Set(categories.map((c) => c.color));
+      const color = CATEGORY_COLORS.find((c) => !used.has(c)) ?? CATEGORY_COLORS[categories.length % CATEGORY_COLORS.length];
+      const created = { id: crypto.randomUUID(), name, color };
+      const next = [...categories, created];
+      setCategories(next);
+      setCategory(created.id);
+      saveCategories(next).catch((err) => console.error('Failed to save category', err));
+    }
+    setNewCategory(null);
   };
 
-  const movePhaseUp = (index: number) => {
-    if (index === 0) return;
-    const next = [...phases];
-    [next[index - 1], next[index]] = [next[index], next[index - 1]];
-    setPhases(next);
+  const createProject = async () => {
+    const name = (newProject ?? '').trim();
+    if (!name) return;
+    const existing = projects.find((p) => p.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      setProjectId(existing.id);
+    } else {
+      const created: Project = { id: crypto.randomUUID(), name, createdAt: new Date().toISOString() };
+      setProjects([...projects, created]);
+      setProjectId(created.id);
+      addProject(created).catch((err) => console.error('Failed to save project', err));
+    }
+    setNewProject(null);
   };
 
   const isEditing = !!editTask;
@@ -127,8 +162,8 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
       // project has to be an absent key, not `projectId: undefined`.
       ...(projectId ? { projectId } : {}),
       createdAt: editTask?.createdAt ?? new Date().toISOString(),
-      // Phases drive progress; the slider value only applies without them.
-      ...(cleanPhases.length ? { phases: cleanPhases } : { manualProgress }),
+      // Phases are what progress is measured by; a task without them is just To Do / In Progress / Done.
+      ...(cleanPhases.length ? { phases: cleanPhases } : {}),
       // Focus totals are written by Pomodoro sessions, never by this form.
       ...(editTask?.focusMinutes ? { focusMinutes: editTask.focusMinutes } : {}),
       ...(editTask?.pomodoros ? { pomodoros: editTask.pomodoros } : {}),
@@ -194,53 +229,15 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
           <p className="ws-field-label">
             Phases <span className="ws-field-optional">optional</span>
           </p>
-          <p className="ws-field-hint">Big task? Split it into steps. Progress is the share you&apos;ve ticked off.</p>
-          {phases.length > 0 && (
-            <div className="ws-phase-list">
-              {phases.map((phase, i) => (
-                <div key={phase.id} className="ws-phase-row">
-                  <button
-                    type="button"
-                    className={`ws-checkbox-btn ws-checkbox-btn--sm${phase.done ? ' is-done' : ''}`}
-                    aria-pressed={phase.done}
-                    aria-label={phase.done ? `Mark ${phase.title} not done` : `Mark ${phase.title} done`}
-                    onClick={() => updatePhase(phase.id, { done: !phase.done })}
-                  >
-                    {phase.done && <IonIcon icon={checkmarkOutline} />}
-                  </button>
-                  <input
-                    className="ws-plain-input ws-plain-input--sm"
-                    type="text"
-                    value={phase.title}
-                    aria-label={`Phase ${i + 1} name`}
-                    onChange={(e) => updatePhase(phase.id, { title: e.target.value })}
-                  />
-                  <button
-                    type="button"
-                    className="ws-round-btn"
-                    aria-label={`Move ${phase.title} up`}
-                    disabled={i === 0}
-                    onClick={() => movePhaseUp(i)}
-                  >
-                    <IonIcon icon={arrowUpOutline} style={{ fontSize: 13 }} />
-                  </button>
-                  <button
-                    type="button"
-                    className="ws-round-btn"
-                    aria-label={`Remove ${phase.title}`}
-                    onClick={() => setPhases(phases.filter((p) => p.id !== phase.id))}
-                  >
-                    <IonIcon icon={closeOutline} style={{ fontSize: 14 }} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <p className="ws-field-hint">Big task? Split it into steps and drag the handle to reorder them. Progress is the share you tick off.</p>
+          {phases.length > 0 && <PhaseList phases={phases} onChange={setPhases} />}
           <div className="ws-phase-add">
             <input
+              ref={phaseInputRef}
               className="ws-plain-input ws-plain-input--sm"
               type="text"
               value={phaseInput}
+              placeholder={`Phase ${phases.length + 1}`}
               aria-label="New phase"
               onChange={(e) => setPhaseInput(e.target.value)}
               onKeyDown={(e) => {
@@ -250,26 +247,11 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
                 }
               }}
             />
-            <button type="button" className="ws-tag-add" onClick={addPhase} disabled={!phaseInput.trim()}>
+            <button type="button" className="ws-tag-add" onClick={addPhase}>
               <IonIcon icon={addOutline} style={{ fontSize: 14 }} />
               Add
             </button>
           </div>
-
-          {/* A brand-new task is at 0% anyway, so the slider only appears when editing. */}
-          {isEditing && phases.length === 0 && (
-            <>
-              <p className="ws-field-label">Progress · {manualProgress}%</p>
-              <IonRange
-                min={0}
-                max={100}
-                step={5}
-                value={manualProgress}
-                aria-label="Progress"
-                onIonInput={(e) => setManualProgress(e.detail.value as number)}
-              />
-            </>
-          )}
         </section>
 
         {/* 2. When & how urgent - what the scheduler ranks on. */}
@@ -336,7 +318,37 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
                     {c.name}
                   </button>
                 ))}
+                {newCategory === null && (
+                  <button type="button" className="ws-filter-chip ws-filter-chip--add" onClick={() => setNewCategory('')}>
+                    <IonIcon icon={addOutline} /> New category
+                  </button>
+                )}
               </div>
+              {newCategory !== null && (
+                <div className="ws-phase-add">
+                  <input
+                    className="ws-plain-input ws-plain-input--sm"
+                    type="text"
+                    autoFocus
+                    value={newCategory}
+                    maxLength={24}
+                    placeholder="Category name"
+                    aria-label="New category name"
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        createCategory();
+                      }
+                      if (e.key === 'Escape') setNewCategory(null);
+                    }}
+                  />
+                  <button type="button" className="ws-tag-add" onClick={createCategory} disabled={!newCategory.trim()}>
+                    <IonIcon icon={addOutline} style={{ fontSize: 14 }} />
+                    Create
+                  </button>
+                </div>
+              )}
 
               <p className="ws-field-label">Project</p>
               <IonSelect
@@ -352,6 +364,35 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
                   </IonSelectOption>
                 ))}
               </IonSelect>
+              {newProject === null ? (
+                <button type="button" className="ws-draft__add" onClick={() => setNewProject('')}>
+                  <IonIcon icon={addOutline} /> New project
+                </button>
+              ) : (
+                <div className="ws-phase-add">
+                  <input
+                    className="ws-plain-input ws-plain-input--sm"
+                    type="text"
+                    autoFocus
+                    value={newProject}
+                    maxLength={40}
+                    placeholder="Project name"
+                    aria-label="New project name"
+                    onChange={(e) => setNewProject(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        createProject();
+                      }
+                      if (e.key === 'Escape') setNewProject(null);
+                    }}
+                  />
+                  <button type="button" className="ws-tag-add" onClick={createProject} disabled={!newProject.trim()}>
+                    <IonIcon icon={addOutline} style={{ fontSize: 14 }} />
+                    Create
+                  </button>
+                </div>
+              )}
 
               <p className="ws-field-label">Effort</p>
               <div className="ws-stepper" role="group" aria-label="Estimated effort in days">
@@ -378,23 +419,35 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
               </div>
 
               <p className="ws-field-label">Tags</p>
-              {tags.length > 0 && (
-                <div className="ws-tag-row">
-                  {tags.map((tag) => (
-                    <span key={tag} className="ws-tag-chip">
-                      {tag}
-                      <button type="button" onClick={() => removeTag(tag)} aria-label={`Remove tag ${tag}`}>
-                        <IonIcon icon={closeOutline} style={{ fontSize: 13 }} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
+              {(() => {
+                // Every tag you've used before, plus any picked on this task: tap to toggle.
+                const all = [...savedTags, ...tags.filter((t) => !savedTags.includes(t))];
+                return all.length > 0 ? (
+                  <div className="ws-tag-row" role="group" aria-label="Your tags">
+                    {all.map((tag) => {
+                      const on = tags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          aria-pressed={on}
+                          className={`ws-filter-chip ws-filter-chip--tag${on ? ' is-active' : ''}`}
+                          onClick={() => toggleTag(tag)}
+                        >
+                          {tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null;
+              })()}
               <div className="ws-phase-add">
                 <input
+                  ref={tagInputRef}
                   className="ws-plain-input ws-plain-input--sm"
                   type="text"
                   value={tagInput}
+                  placeholder="New tag"
                   aria-label="New tag"
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -404,7 +457,7 @@ export default function AddTask({ onClose, editTask }: { onClose: () => void; ed
                     }
                   }}
                 />
-                <button type="button" className="ws-tag-add" onClick={addTag} disabled={!tagInput.trim()}>
+                <button type="button" className="ws-tag-add" onClick={addTag}>
                   <IonIcon icon={addOutline} style={{ fontSize: 14 }} />
                   Add
                 </button>

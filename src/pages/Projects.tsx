@@ -257,7 +257,7 @@ export default function Projects() {
               return (
                 <div key={task.id} className="ws-project-task ws-task-card--tappable" onClick={() => setEditingTask(task)}>
                   <span className="ws-project-task__title">{task.title}</span>
-                  <span className="ws-project-task__percent ws-num">{taskProgress(task)}%</span>
+                  {!!task.phases?.length && <span className="ws-project-task__percent ws-num">{taskProgress(task)}%</span>}
                   <span className="ws-pill" style={{ background: sPill.bg, color: sPill.text, fontSize: 11 }}>
                     {sPill.label}
                   </span>

@@ -25,6 +25,7 @@ import { useUndoToast } from '../hooks/useUndoToast';
 import { useAuth } from '../contexts/AuthContext';
 import { useAvatar } from '../contexts/AvatarContext';
 import { greetingFor, homeMessage } from '../utils/home';
+import TaskListPopup, { type TaskListView } from '../components/TaskListPopup';
 import Avatar from '../components/Avatar';
 import ProgressRing from '../components/ProgressRing';
 import TaskProgressBar from '../components/TaskProgressBar';
@@ -37,14 +38,9 @@ import type { Task, OnboardingProfile, TaskStatus } from '../types';
 // Each chip filters Today's Tasks; `help` explains the less obvious ones
 // while that chip is selected.
 const STATUS_FILTERS: { id: TaskStatus; short: string; help?: string }[] = [
-  { id: 'todo', short: 'To Do' },
+  { id: 'todo', short: 'To Do', help: 'Tap the circle on a task to start it. Tap again when it is finished.' },
   { id: 'in-progress', short: 'In Progress', help: 'Your focus view: run a Pomodoro, tick off phases, see time spent.' },
-  {
-    id: 'in-review',
-    short: 'Waiting',
-    help: "Handed in or handed off, waiting on someone else: a grade, feedback or a reply.",
-  },
-  { id: 'done', short: 'Done', help: 'Finished tasks, newest first. Uncheck one to restore it.' },
+  { id: 'done', short: 'Done', help: 'What you finished today. Everything you have completed is in your Profile.' },
 ];
 
 export default function Dashboard() {
@@ -58,6 +54,8 @@ export default function Dashboard() {
   // celebration animation would have zero time to play at all.
   const [celebrating, setCelebrating] = useState<Task | null>(null);
   const [showLater, setShowLater] = useState(false);
+  const [scope, setScope] = useState<'today' | 'overall'>('today');
+  const [listView, setListView] = useState<TaskListView | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [seen, setSeen] = useState<string[]>([]);
   const [permission, setPermission] = useState<ReminderPermission>('unsupported');
@@ -142,16 +140,33 @@ export default function Dashboard() {
     syncReminders(tasks, profile?.reminderStyle).catch((err) => console.error('Failed to sync reminders', err));
   }
 
-  const total = tasks.length;
-  const completed = tasks.filter((t) => t.status === 'done').length;
-  const pending = total - completed;
+  // "Today" is what needs doing now (due today or overdue) plus what was finished today;
+  // "Overall" is every task.
+  const todayKey = format(now, 'yyyy-MM-dd');
+  const doneToday = useMemo(
+    () => tasks.filter((t) => t.status === 'done' && t.completedAt && format(new Date(t.completedAt), 'yyyy-MM-dd') === todayKey),
+    [tasks, todayKey]
+  );
+  const stats = useMemo(() => {
+    const open = tasks.filter((t) => t.status !== 'done');
+    const completedAll = tasks.filter((t) => t.status === 'done');
+    if (scope === 'overall') return { all: tasks, done: completedAll, pending: open };
+    const dueNow = open.filter((t) => t.dueDate <= todayKey);
+    return { all: [...doneToday, ...dueNow], done: doneToday, pending: dueNow };
+  }, [tasks, scope, todayKey, doneToday]);
+  const total = stats.all.length;
+  const completed = stats.done.length;
+  const pending = stats.pending.length;
   const percent = total ? (completed / total) * 100 : 0;
+  const allCompletedCount = tasks.filter((t) => t.status === 'done').length;
 
   const statusCounts = useMemo(() => {
-    const counts: Record<TaskStatus, number> = { todo: 0, 'in-progress': 0, 'in-review': 0, done: 0 };
-    tasks.forEach((t) => counts[t.status]++);
+    const counts: Record<TaskStatus, number> = { todo: 0, 'in-progress': 0, done: doneToday.length };
+    tasks.forEach((t) => {
+      if (t.status !== 'done') counts[t.status]++;
+    });
     return counts;
-  }, [tasks]);
+  }, [tasks, doneToday]);
 
   const isDoneView = statusFilter === 'done';
   const isFocusView = statusFilter === 'in-progress';
@@ -160,14 +175,14 @@ export default function Dashboard() {
   // completed tasks, most recently finished first, outside the scheduler.
   const visibleTasks = useMemo((): ScoredTask[] => {
     if (statusFilter === 'done') {
-      return tasks
-        .filter((t) => t.status === 'done')
+      return doneToday
+        .slice()
         .sort((x, y) => (y.completedAt ?? y.createdAt).localeCompare(x.completedAt ?? x.createdAt))
         .map((t) => ({ ...t, score: 0, suggestedStartDate: t.dueDate }));
     }
     const base = statusFilter ? tasks.filter((t) => t.status === statusFilter) : tasks.filter((t) => t.status !== 'done');
     return getScheduleRecommendations(base, profile?.priorityLens);
-  }, [tasks, statusFilter, profile?.priorityLens]);
+  }, [tasks, doneToday, statusFilter, profile?.priorityLens]);
 
   // getScheduleRecommendations() correctly excludes done tasks (that's core
   // scheduler logic, not something to special-case) - so a just-completed
@@ -200,18 +215,22 @@ export default function Dashboard() {
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
   }
 
-  async function handleToggleDone(task: Task) {
-    const updated = toggleDone(task);
+  /** The task circle: To Do -> In Progress -> Done, and a done task goes back where it was. */
+  async function handleAdvance(task: Task) {
+    const updated = cycleStatus(task);
     await saveTask(updated);
     if (updated.status === 'done') {
       setCelebrating(updated);
       setTimeout(() => setCelebrating((current) => (current?.id === task.id ? null : current)), 650);
       showUndo('Moved to Done', () => saveTask(task));
+    } else if (updated.status === 'in-progress') {
+      showUndo('Started. It is now In Progress', () => saveTask(task));
     }
   }
 
-  async function handleCycleStatus(task: Task) {
-    const updated = cycleStatus(task);
+  /** Marks a task done directly (the "all phases done" prompt). */
+  async function handleToggleDone(task: Task) {
+    const updated = toggleDone(task);
     await saveTask(updated);
     if (updated.status === 'done') showUndo('Moved to Done', () => saveTask(task));
   }
@@ -257,12 +276,18 @@ export default function Dashboard() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
             type="button"
-            className={`ws-checkbox-btn${task.status === 'done' ? ' is-done' : ''}${isCelebrating ? ' is-celebrating' : ''}`}
-            aria-pressed={task.status === 'done'}
-            aria-label={task.status === 'done' ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`}
-            onClick={stopping(() => handleToggleDone(task))}
+            className={`ws-checkbox-btn${task.status === 'done' ? ' is-done' : ''}${task.status === 'in-progress' ? ' is-progress' : ''}${isCelebrating ? ' is-celebrating' : ''}`}
+            aria-label={
+              task.status === 'todo'
+                ? `Start ${task.title}`
+                : task.status === 'in-progress'
+                  ? `Mark ${task.title} as done`
+                  : `Mark ${task.title} as not done`
+            }
+            onClick={stopping(() => handleAdvance(task))}
           >
             {task.status === 'done' && <IonIcon icon={checkmarkOutline} />}
+            {task.status === 'in-progress' && <span className="ws-checkbox-btn__dot" aria-hidden="true" />}
           </button>
           <p className="ws-task-card__title" style={{ margin: 0 }}>
             {task.title}
@@ -276,14 +301,9 @@ export default function Dashboard() {
             <IonIcon icon={timeOutline} />
             {task.dueTime || task.dueDate}
           </span>
-          <button
-            className="ws-pill"
-            style={{ background: sPill.bg, color: sPill.text, cursor: 'pointer' }}
-            onClick={stopping(() => handleCycleStatus(task))}
-            aria-label={`Cycle status for ${task.title}, currently ${sPill.label}`}
-          >
+          <span className="ws-pill" style={{ background: sPill.bg, color: sPill.text }}>
             {sPill.label}
-          </button>
+          </span>
         </div>
       </div>
     );
@@ -335,21 +355,43 @@ export default function Dashboard() {
         <div className="ws-stat-card">
           <ProgressRing percent={percent} />
           <div className="ws-stat-card__body">
-            <p className="ws-stat-card__title">Today&apos;s Progress</p>
+            <div className="ws-stat-card__head">
+              <p className="ws-stat-card__title">{scope === 'today' ? 'Today’s Progress' : 'Overall Progress'}</p>
+              <div className="ws-scope-toggle" role="group" aria-label="Progress scope">
+                <button type="button" aria-pressed={scope === 'today'} className={scope === 'today' ? 'is-active' : ''} onClick={() => setScope('today')}>
+                  Today
+                </button>
+                <button type="button" aria-pressed={scope === 'overall'} className={scope === 'overall' ? 'is-active' : ''} onClick={() => setScope('overall')}>
+                  Overall
+                </button>
+              </div>
+            </div>
             <div className="ws-stat-card__row">
               <div className="ws-stat-lines">
-                <span className="ws-stat-line">
+                <button
+                  type="button"
+                  className="ws-stat-line"
+                  onClick={() => setListView({ title: scope === 'today' ? 'Today’s tasks' : 'All tasks', hint: scope === 'today' ? 'Due today or overdue, plus what you finished today.' : undefined, tasks: stats.all })}
+                >
                   <IonIcon icon={clipboardOutline} />
                   <strong className="ws-num">{total}</strong> Total Task
-                </span>
-                <span className="ws-stat-line">
+                </button>
+                <button
+                  type="button"
+                  className="ws-stat-line"
+                  onClick={() => setListView({ title: scope === 'today' ? 'Finished today' : 'Completed tasks', tasks: stats.done, byCompletedDay: scope === 'overall' })}
+                >
                   <IonIcon icon={clipboardOutline} />
                   <strong className="ws-num">{completed}</strong> Completed Task
-                </span>
-                <span className="ws-stat-line">
+                </button>
+                <button
+                  type="button"
+                  className="ws-stat-line"
+                  onClick={() => setListView({ title: scope === 'today' ? 'To do today' : 'Pending tasks', hint: scope === 'today' ? 'Due today or overdue.' : undefined, tasks: stats.pending })}
+                >
                   <IonIcon icon={clipboardOutline} />
                   <strong className="ws-num">{pending}</strong> Pending Task
-                </span>
+                </button>
               </div>
             </div>
           </div>
@@ -404,8 +446,8 @@ export default function Dashboard() {
                 <p>
                   {activeFilter
                     ? `No ${activeFilter.short} tasks right now.`
-                    : completed > 0
-                      ? 'All caught up! Finished tasks are under Done.'
+                    : allCompletedCount > 0
+                      ? 'All caught up! Finished tasks are in your Profile.'
                       : 'No tasks yet — tap the + button to add your first one.'}
                 </p>
               </div>
@@ -440,6 +482,15 @@ export default function Dashboard() {
           </>
         )}
       </IonContent>
+
+      <TaskListPopup
+        view={listView}
+        onClose={() => setListView(null)}
+        onOpenTask={(task) => {
+          setListView(null);
+          setEditingTask(task);
+        }}
+      />
 
       <IonModal isOpen={showNotifications} onDidDismiss={closeNotifications}>
         <NotificationCenter

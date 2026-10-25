@@ -1,13 +1,12 @@
 import type { Task } from '../types';
 import { taskProgress } from '../utils/progress';
 
-/** Thin bar + label: "2/3 phases · 67%", or just "40%" without phases. */
+/** Thin bar + label: "2/3 phases · 67%". Tasks without phases have no bar. */
 export default function TaskProgressBar({ task }: { task: Task }) {
-  const percent = taskProgress(task);
   const phases = task.phases ?? [];
-  const label = phases.length
-    ? `${phases.filter((p) => p.done).length}/${phases.length} phases · ${percent}%`
-    : `${percent}%`;
+  if (phases.length === 0) return null;
+  const percent = taskProgress(task);
+  const label = `${phases.filter((p) => p.done).length}/${phases.length} phases · ${percent}%`;
 
   return (
     <div className="ws-progress">

@@ -12,7 +12,7 @@ export type Quadrant = 'do' | 'schedule' | 'delegate' | 'delete';
 export type WorkStyle = 'planner' | 'deadline-driven' | 'spontaneous';
 export type PriorityLens = 'urgency' | 'importance' | 'effort';
 export type ReminderStyle = 'early' | 'last-minute' | 'self-check';
-export type TaskStatus = 'todo' | 'in-progress' | 'in-review' | 'done';
+export type TaskStatus = 'todo' | 'in-progress' | 'done';
 export type Theme =
   | 'light'
   | 'dark'
@@ -21,7 +21,15 @@ export type Theme =
   | 'nord'
   | 'dracula'
   | 'rose-pine'
-  | 'tokyo-night';
+  | 'tokyo-night'
+  | 'sakura'
+  | 'strawberry-milk'
+  | 'lavender-haze'
+  | 'cotton-candy'
+  | 'matcha-latte'
+  | 'solarized-light'
+  | 'midnight-orchid'
+  | 'rose-gold';
 export type Plan = 'free' | 'plus';
 
 export interface Task {

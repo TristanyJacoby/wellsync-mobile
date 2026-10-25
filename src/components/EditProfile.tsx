@@ -5,6 +5,7 @@ import {
   linkWithCredential,
   reauthenticateWithCredential,
   reauthenticateWithPopup,
+  sendPasswordResetEmail,
   updatePassword,
 } from 'firebase/auth';
 import { useRef, useState } from 'react';
@@ -98,6 +99,21 @@ export default function EditProfile({
     }
   }
 
+  async function forgotPassword() {
+    const email = auth.currentUser?.email;
+    if (!email) return;
+    setBusy(true);
+    setPwMsg(null);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setPwMsg({ ok: true, text: `We sent a password reset link to ${email}.` });
+    } catch (err) {
+      setPwMsg({ ok: false, text: authMessage(err) });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function changePassword() {
     const u = auth.currentUser;
     if (!u?.email) return;
@@ -143,33 +159,31 @@ export default function EditProfile({
         <span style={{ width: 44 }} />
       </div>
 
-      <section className="ws-glass-card ws-edit-section">
-        <h3>Photo</h3>
-        <div className="ws-edit-photo">
-          <Avatar name={name || user?.email || ''} photoURL={avatarUrl} size={84} />
-          <div className="ws-edit-photo__actions">
-            <button type="button" className="ws-button-block ws-button-block--sm" disabled={busy} onClick={() => fileRef.current?.click()}>
-              <IonIcon icon={cameraOutline} /> Upload photo
+      <div className="ws-edit-pair">
+        <section className="ws-glass-card ws-edit-section ws-edit-section--photo">
+          <h3>Photo</h3>
+          <Avatar name={name || user?.email || ''} photoURL={avatarUrl} size={72} />
+          <button type="button" className="ws-button-block ws-button-block--sm ws-button-block--wide" disabled={busy} onClick={() => fileRef.current?.click()}>
+            <IonIcon icon={cameraOutline} /> Upload photo
+          </button>
+          {hasCustomPhoto && (
+            <button type="button" className="ws-edit-link" disabled={busy} onClick={removePhoto}>
+              <IonIcon icon={trashOutline} /> Remove
             </button>
-            {hasCustomPhoto && (
-              <button type="button" className="ws-edit-link" disabled={busy} onClick={removePhoto}>
-                <IonIcon icon={trashOutline} /> Remove
-              </button>
-            )}
-          </div>
+          )}
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => pickPhoto(e.target.files?.[0])} />
-        </div>
-        <Msg m={photoMsg} />
-      </section>
+          <Msg m={photoMsg} />
+        </section>
 
-      <section className="ws-glass-card ws-edit-section">
-        <h3>Name</h3>
-        <input className="ws-plain-input" value={name} maxLength={40} aria-label="Name" onChange={(e) => setName(e.target.value)} />
-        <button type="button" className="ws-button-block ws-button-block--sm" disabled={busy || !name.trim() || name.trim() === profile?.name} onClick={saveName}>
-          Save name
-        </button>
-        <Msg m={nameMsg} />
-      </section>
+        <section className="ws-glass-card ws-edit-section">
+          <h3>Name</h3>
+          <input className="ws-plain-input" value={name} maxLength={40} aria-label="Name" onChange={(e) => setName(e.target.value)} />
+          <button type="button" className="ws-button-block ws-button-block--sm ws-button-block--right" disabled={busy || !name.trim() || name.trim() === profile?.name} onClick={saveName}>
+            Save name
+          </button>
+          <Msg m={nameMsg} />
+        </section>
+      </div>
 
       <section className="ws-glass-card ws-edit-section">
         <h3>{hasPassword ? 'Change password' : 'Set a password'}</h3>
@@ -190,9 +204,18 @@ export default function EditProfile({
         )}
         <input className="ws-plain-input" type="password" autoComplete="new-password" placeholder="New password" value={next} onChange={(e) => setNext(e.target.value)} />
         <input className="ws-plain-input" type="password" autoComplete="new-password" placeholder="Confirm new password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-        <button type="button" className="ws-button-block ws-button-block--sm" disabled={busy || !next || !confirm} onClick={changePassword}>
-          {hasPassword ? 'Update password' : 'Set password'}
-        </button>
+        <div className="ws-edit-actions">
+          {hasPassword ? (
+            <button type="button" className="ws-edit-link ws-edit-link--plain" disabled={busy} onClick={forgotPassword}>
+              Forgot password?
+            </button>
+          ) : (
+            <span />
+          )}
+          <button type="button" className="ws-button-block ws-button-block--sm" disabled={busy || !next || !confirm} onClick={changePassword}>
+            {hasPassword ? 'Update password' : 'Set password'}
+          </button>
+        </div>
         <Msg m={pwMsg} />
       </section>
     </IonContent>

@@ -494,8 +494,54 @@ h1, h2, h3, h4, p {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 2px 0;
+  background: none;
+  border: none;
+  font: inherit;
+  text-align: left;
   color: var(--ws-dark-ink-muted);
   font-size: 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.ws-stat-line:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ws-stat-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.ws-scope-toggle {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: var(--ws-radius-pill);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ws-scope-toggle button {
+  padding: 3px 10px;
+  border: none;
+  border-radius: var(--ws-radius-pill);
+  background: none;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ws-dark-ink-muted);
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.ws-scope-toggle button.is-active {
+  background: var(--ws-amber-strong);
+  color: #1c1c1e;
 }
 
 .ws-stat-line strong {
@@ -1422,6 +1468,18 @@ ion-range {
 
 .ws-checkbox-btn ion-icon {
   font-size: 15px;
+}
+
+/* In Progress: an amber ring with a filled dot, between empty (To Do) and a check (Done). */
+.ws-checkbox-btn.is-progress {
+  border-color: var(--ws-amber-strong);
+}
+
+.ws-checkbox-btn__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ws-amber-strong);
 }
 
 /* Task-complete celebration: a quick pop on the checkbox itself plus a
@@ -3509,4 +3567,342 @@ ion-router-outlet > .ion-page:not(.ion-page-hidden):not(.ion-page-invisible) {
 
 .ws-edit-link--plain {
   color: var(--ws-ink);
+}
+
+/* ---------- Task list pop-up (Home stats, Profile stats) ---------- */
+
+.ws-tasklist__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.ws-tasklist__head h3 {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ws-tasklist {
+  width: 100%;
+  max-height: 50vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.ws-tasklist__day {
+  margin: 10px 0 4px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ws-ink-faint);
+}
+
+.ws-tasklist__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--ws-radius-sm);
+  background: var(--ws-glass-bg);
+  font: inherit;
+  text-align: left;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-tasklist__dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.ws-tasklist__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ws-tasklist__text strong {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.ws-tasklist__text span {
+  font-size: 12px;
+  color: var(--ws-ink-muted);
+}
+
+/* ---------- Add Task: draggable phases, clickable Add, saved tags ---------- */
+
+.ws-phase-row {
+  position: relative;
+  padding: 2px 0;
+  background: var(--ws-popup-bg);
+  border-radius: var(--ws-radius-sm);
+}
+
+.ws-phase-row.is-dragging {
+  z-index: 5;
+  box-shadow: var(--ws-glass-shadow);
+  opacity: 0.95;
+}
+
+.ws-phase-grip {
+  width: 28px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ws-ink-faint);
+  font-size: 22px;
+  cursor: grab;
+  touch-action: none; /* lets the finger drag the row instead of scrolling the form */
+}
+
+.ws-phase-grip:active {
+  cursor: grabbing;
+}
+
+.ws-phase-num {
+  flex-shrink: 0;
+  min-width: 56px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ws-amber-strong);
+}
+
+/* "+ Add" is always tappable: filled so it reads as a button, and it focuses the field when empty. */
+.ws-tag-add {
+  border: 1.5px solid var(--ws-amber-strong);
+  background: var(--ws-amber-dim);
+  color: var(--ws-ink);
+  font-weight: 700;
+}
+
+.ws-tag-add:active {
+  transform: translateY(1px);
+}
+
+.ws-tag-add:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ws-filter-chip--add {
+  border: 1.5px dashed var(--ws-ink-faint);
+  background: transparent;
+  color: var(--ws-ink-muted);
+}
+
+.ws-filter-chip--tag {
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+/* ---------- Per-task timer with a progress ring ---------- */
+
+.ws-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin: 14px 0 6px;
+  padding: 18px 12px;
+  border-radius: var(--ws-radius-md);
+  background: var(--ws-glass-bg);
+}
+
+.ws-timer-ring {
+  position: relative;
+}
+
+.ws-timer-ring__track {
+  stroke: var(--ws-glass-border);
+}
+
+.ws-timer-ring__arc {
+  stroke: var(--ws-amber-strong);
+  transition: stroke-dashoffset 0.5s linear;
+}
+
+.ws-timer-ring--break .ws-timer-ring__arc {
+  stroke: var(--ws-done-text);
+}
+
+.ws-timer-ring__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ws-timer__mode {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ws-ink-muted);
+}
+
+.ws-timer__clock {
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--ws-ink);
+}
+
+.ws-timer__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ws-timer-idle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0 4px;
+}
+
+.ws-timer-idle__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ws-ink-muted);
+}
+
+.ws-focus-length {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--ws-glass-border);
+  border-radius: var(--ws-radius-pill);
+  background: var(--ws-glass-bg);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ws-ink);
+  cursor: pointer;
+}
+
+.ws-phase-check__num {
+  font-weight: 800;
+  color: var(--ws-amber-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-timer-ring__arc {
+    transition: none;
+  }
+}
+
+/* ---------- Profile: tappable stat cards, avatar upload ---------- */
+
+.ws-stat-tile--button {
+  display: block;
+  width: 100%;
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ws-avatar-btn {
+  position: relative;
+}
+
+.ws-avatar-btn__badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--ws-amber-strong);
+  color: #1c1c1e;
+  font-size: 15px;
+  border: 2px solid var(--ws-popup-bg);
+}
+
+/* ---------- Edit profile: photo and name side by side ---------- */
+
+.ws-edit-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.6fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.ws-edit-pair .ws-edit-section {
+  margin-top: 16px;
+  min-width: 0;
+}
+
+.ws-edit-section--photo {
+  align-items: center;
+  text-align: center;
+}
+
+.ws-button-block--wide {
+  align-self: stretch;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 12px;
+}
+
+.ws-button-block--right {
+  align-self: flex-end;
+}
+
+.ws-edit-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ws-edit-actions .ws-button-block--sm {
+  align-self: auto;
+}
+
+.ws-themepicker__list {
+  max-height: 52vh;
+  overflow-y: auto;
+}
+
+.ws-themepicker__group {
+  margin: 8px 10px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ws-ink-faint);
+}
+
+.ws-edit-section .ws-plain-input {
+  flex: none;
+  width: 100%;
+  height: 44px;
 }

@@ -22,10 +22,14 @@ export default function ThemePicker() {
 
       {open && (
         <ul className="ws-glass-card ws-themepicker__list" role="listbox" aria-label="Theme">
-          {THEMES.map((t) => {
+          {THEMES.map((t, i) => {
             const locked = t.premium && !isPlus;
+            const group = !t.premium ? 'Free' : t.mode === 'light' ? 'Plus · Light' : 'Plus · Dark';
+            const prev = THEMES[i - 1];
+            const prevGroup = prev ? (!prev.premium ? 'Free' : prev.mode === 'light' ? 'Plus · Light' : 'Plus · Dark') : null;
             return (
               <li key={t.id} role="option" aria-selected={theme === t.id}>
+                {group !== prevGroup && <p className="ws-themepicker__group">{group}</p>}
                 <button
                   type="button"
                   className={`ws-themepicker__option${theme === t.id ? ' is-selected' : ''}`}

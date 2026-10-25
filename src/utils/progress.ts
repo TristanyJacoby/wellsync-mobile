@@ -1,8 +1,8 @@
 import type { Task } from '../types';
 
 /**
- * 0-100. Done is always 100; otherwise completed phases / total phases, or
- * the manual slider value for a task that has no phases.
+ * 0-100. Done is always 100; otherwise completed phases / total phases. A task
+ * without phases has no partial progress (it is just To Do, In Progress or Done).
  */
 export function taskProgress(task: Task): number {
   if (task.status === 'done') return 100;
@@ -10,7 +10,7 @@ export function taskProgress(task: Task): number {
   if (phases.length > 0) {
     return Math.round((phases.filter((p) => p.done).length / phases.length) * 100);
   }
-  return task.manualProgress ?? 0;
+  return 0;
 }
 
 /** Average progress of a project's tasks; 0 for an empty project. */

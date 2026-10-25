@@ -3,9 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { addDays, format } from 'date-fns';
 import {
-  addOutline,
   arrowBackOutline,
-  ellipsisHorizontalOutline,
   calendarOutline,
   optionsOutline,
   sunnyOutline,
@@ -50,7 +48,6 @@ export default function TaskSchedule() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [filter, setFilter] = useState<Category | 'All'>('All');
-  const [showAddTask, setShowAddTask] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [categories, setCategories] = useState<CategoryDef[]>(DEFAULT_CATEGORIES);
@@ -147,6 +144,19 @@ export default function TaskSchedule() {
     });
   }
 
+  // Days with a task due get a tinted, outlined circle in the full calendar, not just a dot on the
+  // strip. Same set as the dots, so the active category filter applies to both.
+  const highlightedDates = (iso: string) => {
+    if (!datesWithTasks.has(iso.slice(0, 10))) return undefined;
+    const css = getComputedStyle(document.documentElement);
+    const accent = css.getPropertyValue('--ws-amber-strong').trim() || '#d9a441';
+    return {
+      textColor: css.getPropertyValue('--ws-ink').trim() || undefined,
+      backgroundColor: css.getPropertyValue('--ws-amber-dim').trim() || undefined,
+      border: `1.5px solid ${accent}`,
+    };
+  };
+
   return (
     <IonPage>
       <IonContent fullscreen className="ion-padding ws-has-fab">
@@ -155,14 +165,8 @@ export default function TaskSchedule() {
             <IonIcon icon={arrowBackOutline} style={{ fontSize: 18 }} />
           </button>
           <h2 style={{ fontSize: 15, fontWeight: 700 }}>{format(selectedDate, 'EEE, MMM d')}</h2>
-          <div className="ws-header__actions">
-            <button className="ws-icon-btn ws-icon-btn--dark" aria-label="Add task" onClick={() => setShowAddTask(true)}>
-              <IonIcon icon={addOutline} style={{ fontSize: 20 }} />
-            </button>
-            <button className="ws-icon-btn" aria-label="More options" onClick={() => history.push('/profile')}>
-              <IonIcon icon={ellipsisHorizontalOutline} style={{ fontSize: 18 }} />
-            </button>
-          </div>
+          {/* Same width as the back button, so the date stays centered. */}
+          <span style={{ width: 44 }} aria-hidden="true" />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginTop: 18 }}>
@@ -301,16 +305,12 @@ export default function TaskSchedule() {
       </IonContent>
 
       <IonModal
-        isOpen={showAddTask || !!editingTask}
-        onDidDismiss={() => {
-          setShowAddTask(false);
-          setEditingTask(null);
-        }}
+        isOpen={!!editingTask}
+        onDidDismiss={() => setEditingTask(null)}
       >
         <AddTask
           editTask={editingTask ?? undefined}
           onClose={() => {
-            setShowAddTask(false);
             setEditingTask(null);
             refresh();
           }}
@@ -320,6 +320,7 @@ export default function TaskSchedule() {
       <IonModal isOpen={showDatePicker} onDidDismiss={() => setShowDatePicker(false)} className="ws-date-modal">
         <IonDatetime
           presentation="date"
+          highlightedDates={highlightedDates}
           value={format(selectedDate, "yyyy-MM-dd'T'HH:mm:ss")}
           onIonChange={(e) => {
             const value = Array.isArray(e.detail.value) ? e.detail.value[0] : e.detail.value;

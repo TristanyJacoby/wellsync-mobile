@@ -1,7 +1,7 @@
 import { IonContent, IonPage, IonModal, IonIcon, useIonViewWillEnter } from '@ionic/react';
 import { useEffect, useRef, useState } from 'react';
 import { signOut } from 'firebase/auth';
-import { pencilOutline, clipboardOutline, checkmarkDoneOutline, hourglassOutline, statsChartOutline, lockClosedOutline, personCircleOutline, chevronForwardOutline } from 'ionicons/icons';
+import { pencilOutline, cameraOutline, clipboardOutline, checkmarkDoneOutline, hourglassOutline, statsChartOutline, lockClosedOutline, personCircleOutline, chevronForwardOutline } from 'ionicons/icons';
 import { auth } from '../services/firebase';
 import { getProfile, getTasks } from '../services/storage';
 import { usePlan } from '../contexts/PlanContext';
@@ -9,6 +9,9 @@ import { useTasksChanged } from '../contexts/TaskChangeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useAvatar } from '../contexts/AvatarContext';
 import { personaFor } from '../utils/persona';
+import { fileToAvatarDataUrl } from '../utils/image';
+import TaskListPopup, { type TaskListView } from '../components/TaskListPopup';
+import AddTask from './AddTask';
 import Avatar from '../components/Avatar';
 import StatCard from '../components/StatCard';
 import EditProfile from '../components/EditProfile';
@@ -40,7 +43,11 @@ export default function Profile() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingPreferences, setEditingPreferences] = useState(false);
   const { plan, isPlus, subscribe, cancel, showPremium } = usePlan();
-  const { avatarUrl } = useAvatar();
+  const { avatarUrl, setPhoto } = useAvatar();
+  const [listView, setListView] = useState<TaskListView | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [photoError, setPhotoError] = useState('');
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
   const [planBusy, setPlanBusy] = useState(false);
   const { user } = useAuth();
@@ -101,6 +108,20 @@ export default function Profile() {
     }
   }
 
+  async function changePhoto(file: File | undefined, input: HTMLInputElement) {
+    if (!file) return;
+    setPhotoError('');
+    try {
+      await setPhoto(await fileToAvatarDataUrl(file));
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : 'Could not save that photo.');
+    } finally {
+      input.value = '';
+    }
+  }
+
+  const doneTasks = tasks.filter((t) => t.status === 'done');
+  const openTasks = tasks.filter((t) => t.status !== 'done');
   const total = tasks.length;
   const completed = tasks.filter((t) => t.status === 'done').length;
   const pending = total - completed;
@@ -111,14 +132,16 @@ export default function Profile() {
     <IonPage>
       <IonContent fullscreen className="ion-padding ws-has-fab">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 12, marginBottom: 24 }}>
-          <button type="button" className="ws-avatar-btn" aria-label="Edit profile photo" onClick={() => setEditingProfile(true)}>
+          <button type="button" className="ws-avatar-btn" aria-label="Change profile photo" onClick={() => photoInputRef.current?.click()}>
             <Avatar name={profile?.name ?? user?.email ?? ''} photoURL={avatarUrl} size={84} />
+            <span className="ws-avatar-btn__badge" aria-hidden="true">
+              <IonIcon icon={cameraOutline} />
+            </span>
           </button>
+          <input ref={photoInputRef} type="file" accept="image/*" hidden onChange={(e) => changePhoto(e.target.files?.[0], e.target)} />
+          {photoError && <p className="ws-error">{photoError}</p>}
           <div className="ws-profile-name">
             <h2>{profile?.name ?? 'Your profile'}</h2>
-            <button type="button" className="ws-round-btn" aria-label="Edit name" onClick={() => setEditingProfile(true)}>
-              <IonIcon icon={pencilOutline} style={{ fontSize: 14 }} />
-            </button>
           </div>
           <p style={{ fontSize: 13, color: 'var(--ws-ink-muted)', marginTop: 2 }}>{user?.email}</p>
           {persona && (
@@ -140,6 +163,7 @@ export default function Profile() {
               percent={completionRate}
               bg="var(--ws-amber-dim)"
               text="var(--ws-amber-strong)"
+              onClick={() => setListView({ title: 'Completion rate', hint: `${completed} of ${total} tasks finished. Here is what you have accomplished.`, tasks: doneTasks, byCompletedDay: true })}
             />
           </div>
           <div className={`ws-stat-carousel__item${focusedIndex === 1 ? ' is-focused' : ''}`}>
@@ -150,6 +174,7 @@ export default function Profile() {
               percent={100}
               bg="var(--ws-inreview-bg)"
               text="var(--ws-inreview-text)"
+              onClick={() => setListView({ title: 'All tasks', tasks })}
             />
           </div>
           <div className={`ws-stat-carousel__item${focusedIndex === 2 ? ' is-focused' : ''}`}>
@@ -160,6 +185,7 @@ export default function Profile() {
               percent={completionRate}
               bg="var(--ws-done-bg)"
               text="var(--ws-done-text)"
+              onClick={() => setListView({ title: 'Completed tasks', hint: 'Everything you have finished, newest first.', tasks: doneTasks, byCompletedDay: true })}
             />
           </div>
           <div className={`ws-stat-carousel__item${focusedIndex === 3 ? ' is-focused' : ''}`}>
@@ -170,6 +196,7 @@ export default function Profile() {
               percent={total ? (pending / total) * 100 : 0}
               bg="var(--ws-medium-bg)"
               text="var(--ws-medium-text)"
+              onClick={() => setListView({ title: 'Pending tasks', tasks: openTasks })}
             />
           </div>
         </div>
@@ -255,6 +282,27 @@ export default function Profile() {
           Sign Out
         </button>
       </IonContent>
+
+      <TaskListPopup
+        view={listView}
+        onClose={() => setListView(null)}
+        onOpenTask={(task) => {
+          setListView(null);
+          setEditingTask(task);
+        }}
+      />
+
+      <IonModal isOpen={!!editingTask} onDidDismiss={() => setEditingTask(null)}>
+        {editingTask && (
+          <AddTask
+            editTask={editingTask}
+            onClose={() => {
+              setEditingTask(null);
+              refresh();
+            }}
+          />
+        )}
+      </IonModal>
 
       <IonModal isOpen={editingProfile} onDidDismiss={() => setEditingProfile(false)}>
         <EditProfile

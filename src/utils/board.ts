@@ -19,9 +19,6 @@ export function priorityPillStyle(priority: Priority): PillStyle {
 const STATUS_STYLES: Record<TaskStatus, PillStyle> = {
   todo: { bg: 'var(--ws-todo-bg)', text: 'var(--ws-todo-text)', label: 'To Do' },
   'in-progress': { bg: 'var(--ws-inprogress-bg)', text: 'var(--ws-inprogress-text)', label: 'In Progress' },
-  // Stored as 'in-review' so existing tasks keep working; shown as "Waiting"
-  // (handed in or handed off, waiting on a grade, feedback or a reply).
-  'in-review': { bg: 'var(--ws-inreview-bg)', text: 'var(--ws-inreview-text)', label: 'Waiting' },
   done: { bg: 'var(--ws-done-bg)', text: 'var(--ws-done-text)', label: 'Done' },
 };
 
@@ -29,10 +26,9 @@ export function statusPillStyle(status: TaskStatus): PillStyle {
   return STATUS_STYLES[status];
 }
 
-export const STATUS_ORDER: TaskStatus[] = ['todo', 'in-progress', 'in-review', 'done'];
+export const STATUS_ORDER: TaskStatus[] = ['todo', 'in-progress', 'done'];
 
-/** Tapping a status pill cycles it forward - the whole 4-state lifecycle
- * reachable without a separate picker UI. */
+/** The task circle on a card moves it one step forward: To Do -> In Progress -> Done. */
 export function nextStatus(status: TaskStatus): TaskStatus {
   const idx = STATUS_ORDER.indexOf(status);
   return STATUS_ORDER[(idx + 1) % STATUS_ORDER.length];
